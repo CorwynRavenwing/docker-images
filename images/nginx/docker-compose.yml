@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:8080"
+    volumes:
+      - ./src:/var/www/html                   # Shared code directory
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro  # Nginx config
+    depends_on:
+      - php-app
+
+  php-app:
+    image: my-php-fpm:8.3
+    volumes:
+      - ./src:/var/www/html                   # Same code directory
+
