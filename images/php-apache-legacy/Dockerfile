@@ -30,6 +30,11 @@ RUN set -e; \
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Enable mod_rewrite and allow .htaccess overrides + FollowSymLinks in /var/www/html
+RUN set -e; \
+    a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

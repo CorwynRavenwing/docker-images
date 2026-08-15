@@ -11,6 +11,11 @@ RUN a2enmod rewrite
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Enable mod_rewrite and allow .htaccess overrides + FollowSymLinks in /var/www/html
+RUN set -e; \
+    a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
 # Document root defaults to /var/www/html
 WORKDIR /var/www/html
 
