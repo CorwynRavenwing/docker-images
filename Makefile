@@ -262,7 +262,7 @@ $(DOWNLOADS_DIR)/php-%.tar.bz2:
 
 php-cli-%-tsql: php-cli-%
 	@echo "=== Building TSQL Add-on for php-cli:$* ==="
-	@docker build \
+	docker build \
 		--build-arg BASE_IMAGE=php-cli:$* \
 		-t php-cli:$*-tsql \
 		images/add-tsql
@@ -270,7 +270,7 @@ php-cli-%-tsql: php-cli-%
 
 php-apache-%-tsql: php-apache-%
 	@echo "=== Building TSQL Add-on for php-apache:$* ==="
-	@docker build \
+	docker build \
 		--build-arg BASE_IMAGE=php-apache:$* \
 		-t php-apache:$*-tsql \
 		images/add-tsql
@@ -278,7 +278,7 @@ php-apache-%-tsql: php-apache-%
 
 php-fpm-%-tsql: php-fpm-%
 	@echo "=== Building TSQL Add-on for php-fpm:$* ==="
-	@docker build \
+	docker build \
 		--build-arg BASE_IMAGE=php-fpm:$* \
 		-t php-fpm:$*-tsql \
 		images/add-tsql
