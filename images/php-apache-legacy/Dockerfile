@@ -7,12 +7,16 @@ FROM php-base-legacy:${PHP_VERSION}
 RUN apt-get update && apt-get install -y --no-install-recommends apache2 \
     && rm -rf /var/lib/apt/lists/*
 
+# 1. Create the Debian load file for php5
+# 2. Enable the php5 module
 # 3. Switch Apache from threaded MPM (event/worker) to prefork (required for NTS PHP)
 # 4. Tell Apache to execute .php files using the loaded PHP module
 # 5. Suppress healthcheck (curl) requests from Apache access logs
+RUN set -e; \
+    echo "LoadModule php5_module /usr/lib/apache2/modules/libphp5.so" > /etc/apache2/mods-available/php5.load \
     && a2dismod mpm_event mpm_worker || true \
     && a2enmod mpm_prefork php5 \
- && echo '<FilesMatch \.php$>\n\tSetHandler application/x-httpd-php\n</FilesMatch>\nDirectoryIndex index.php index.html' > /etc/apache2/conf-available/php-handler.conf \
+    && echo '<FilesMatch \.php$>\n\tSetHandler application/x-httpd-php\n</FilesMatch>\nDirectoryIndex index.php index.html' > /etc/apache2/conf-available/php-handler.conf \
     && a2enconf php-handler \
     && echo 'SetEnvIf User-Agent "^curl" dontlog' \
         >> /etc/apache2/apache2.conf \
