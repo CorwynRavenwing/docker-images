@@ -84,9 +84,10 @@ ALL_IMAGES  := $(patsubst $(IMAGE_DIR)/%/Dockerfile,%,$(DOCKERFILES))
 
 # 2. Define the three PHP matrix image names
 PHP_IMAGE_TYPES := php-cli php-apache php-fpm
+PHP_BASE_TYPES := php-base-legacy php-cli-legacy php-apache-legacy php-fpm-legacy
 
-KNOWN_TYPES  := $(PHP_IMAGE_TYPES) php-base php-base-legacy php-cli-legacy php-apache-legacy php-fpm-legacy
 OTHER_IMAGES := $(filter-out $(KNOWN_TYPES),$(ALL_IMAGES))
+KNOWN_TYPES  := $(PHP_IMAGE_TYPES) $(PHP_BASE_TYPES)
 
 # 1. Standard Flag Files (e.g., built/php-cli-8.3)
 PHP_TARGETS           := $(foreach type,$(PHP_IMAGE_TYPES),$(foreach ver,$(MODERN_VERSIONS),$(type)-$(ver)))
