@@ -7,12 +7,17 @@ FROM php-base-legacy:${PHP_VERSION}
 RUN apt-get update && apt-get install -y --no-install-recommends apache2 \
     && rm -rf /var/lib/apt/lists/*
 
-# 1. Switch Apache from threaded MPM (event/worker) to prefork (required for NTS PHP)
-# 2. Tell Apache to execute .php files using the loaded PHP module
-RUN a2dismod mpm_event mpm_worker || true \
- && a2enmod mpm_prefork \
+# 3. Switch Apache from threaded MPM (event/worker) to prefork (required for NTS PHP)
+# 4. Tell Apache to execute .php files using the loaded PHP module
+# 5. Suppress healthcheck (curl) requests from Apache access logs
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork php5 \
  && echo '<FilesMatch \.php$>\n\tSetHandler application/x-httpd-php\n</FilesMatch>\nDirectoryIndex index.php index.html' > /etc/apache2/conf-available/php-handler.conf \
- && a2enconf php-handler
+    && a2enconf php-handler \
+    && echo 'SetEnvIf User-Agent "^curl" dontlog' \
+        >> /etc/apache2/apache2.conf \
+    && sed -i 's/CustomLog \(.*\) combined/CustomLog \1 combined env=!dontlog/' \
+        /etc/apache2/sites-available/000-default.conf
 
 # Redirect Apache access and error logs to container stdout/stderr
 RUN set -e; \
