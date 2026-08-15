@@ -18,7 +18,7 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 80
 
-HEALTHCHECK --interval=1s --timeout=2s --start-period=1s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD curl -f http://localhost/ || exit 1
 
 CMD ["apache2ctl", "-D", "FOREGROUND"]
