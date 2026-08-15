@@ -121,7 +121,7 @@ all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)
 # - uses context trick so ./downloads/ is available
 $(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile
 	$(eval REAL_VER := $(call realversion,$*))
-	@$(MAKE) $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
+	@"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
 	@echo "=== Building LEGACY BASE image: php-base-legacy:$(REAL_VER) ==="
 	docker build \
 		--build-arg PHP_VERSION=$(REAL_VER) \
@@ -159,8 +159,8 @@ $(BUILT_DIR)/php-cli-%:
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
 		echo "=== Building LEGACY CLI image: php-cli:$* ($(REAL_VER)) ===" ; \
-		$(MAKE) $(BUILT_DIR)/php-base-legacy-$* ; \
-		$(MAKE) $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
+		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
+		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-cli:$* \
@@ -187,8 +187,8 @@ $(BUILT_DIR)/php-apache-%:
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
 		echo "=== Building LEGACY APACHE image: php-apache:$* ($(REAL_VER)) ===" ; \
-		$(MAKE) $(BUILT_DIR)/php-base-legacy-$* ; \
-		$(MAKE) $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
+		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
+		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-apache:$* \
@@ -215,8 +215,8 @@ $(BUILT_DIR)/php-fpm-%:
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
 		echo "=== Building LEGACY FPM image: php-fpm:$* ($(REAL_VER)) ===" ; \
-		$(MAKE) $(BUILT_DIR)/php-base-legacy-$* ; \
-		$(MAKE) $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
+		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
+		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-fpm:$* \
