@@ -14,6 +14,11 @@ RUN a2dismod mpm_event mpm_worker || true \
  && echo '<FilesMatch \.php$>\n\tSetHandler application/x-httpd-php\n</FilesMatch>\nDirectoryIndex index.php index.html' > /etc/apache2/conf-available/php-handler.conf \
  && a2enconf php-handler
 
+# Redirect Apache access and error logs to container stdout/stderr
+RUN set -e; \
+    ln -sf /dev/stdout /var/log/apache2/access.log \
+ && ln -sf /dev/stderr /var/log/apache2/error.log
+
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 80
