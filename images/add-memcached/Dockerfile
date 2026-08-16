@@ -1,4 +1,6 @@
-ARG BASE_IMAGE
+# images/add-memcached/Dockerfile
+
+ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}
 
 RUN set -e; \

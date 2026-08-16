@@ -1,6 +1,6 @@
 # images/add-redis/Dockerfile
 
-ARG BASE_IMAGE
+ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}
 
 RUN set -e; \

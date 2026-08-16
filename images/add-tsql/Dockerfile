@@ -1,8 +1,8 @@
 # images/add-tsql/Dockerfile
 
 # Declare ARG before FROM so it can be used in the FROM instruction
-# no default, so the system will fail quickly if used improperly
-ARG BASE_IMAGE
+# scratch === an invalid default, so the system will fail quickly if used improperly
+ARG BASE_IMAGE=scratch
 
 FROM ${BASE_IMAGE}
 
