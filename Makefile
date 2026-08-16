@@ -285,7 +285,7 @@ $(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
 	@echo "Auto-generating Makefile $@:"
 	@printf '# --- %s ADD-ON TARGETS ---\n\n' "$*" > $@.tmp
 
-	@printf 'php-cli-%%-%s: php-cli-%%\n' $* >> $@.tmp
+	@printf 'php-cli-%%-%s: php-cli-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-cli:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
 	@printf '\t\t--build-arg BASE_IMAGE=php-cli:$$* \\\n' >> $@.tmp
@@ -293,7 +293,7 @@ $(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
 	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
 	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
 
-	@printf 'php-apache-%%-%s: php-apache-%%\n' $* >> $@.tmp
+	@printf 'php-apache-%%-%s: php-apache-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-apache:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
 	@printf '\t\t--build-arg BASE_IMAGE=php-apache:$$* \\\n' >> $@.tmp
@@ -301,7 +301,7 @@ $(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
 	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
 	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
 
-	@printf 'php-fpm-%%-%s: php-fpm-%%\n' $* >> $@.tmp
+	@printf 'php-fpm-%%-%s: php-fpm-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-fpm:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
 	@printf '\t\t--build-arg BASE_IMAGE=php-fpm:$$* \\\n' >> $@.tmp
