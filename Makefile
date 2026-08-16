@@ -311,220 +311,6 @@ $(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
 
 	@mv $@.tmp $@
 
-# ===============================================================
-# NOTE: PRIOR SECTION SHOULD REPLACE ALL OF THE FOLLOWING STANZAS
-# ===============================================================
-
-# --- tsql ADD-ON TARGETS ---
-
-php-cli-%-tsql: php-cli-%
-	@echo "=== Building tsql Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-tsql \
-		images/add-tsql
-	@touch $(BUILT_DIR)/$@
-
-php-apache-%-tsql: php-apache-%
-	@echo "=== Building tsql Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-tsql \
-		images/add-tsql
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-tsql: php-fpm-%
-	@echo "=== Building tsql Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-tsql \
-		images/add-tsql
-	@touch $(BUILT_DIR)/$@
-
-# --- xdebug ADD-ON TARGETS ---
-
-php-apache-%-xdebug: php-apache-%
-	@echo "=== Building xdebug Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-xdebug \
-		images/add-xdebug
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-xdebug: php-fpm-%
-	@echo "=== Building xdebug Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-xdebug \
-		images/add-xdebug
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-xdebug: php-cli-%
-	@echo "=== Building xdebug Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-xdebug \
-		images/add-xdebug
-	@touch $(BUILT_DIR)/$@
-
-# --- imagick ADD-ON TARGETS ---
-
-php-apache-%-imagick: php-apache-%
-	@echo "=== Building imagick Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-imagick \
-		images/add-imagick
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-imagick: php-fpm-%
-	@echo "=== Building imagick Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-imagick \
-		images/add-imagick
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-imagick: php-cli-%
-	@echo "=== Building imagick Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-imagick \
-		images/add-imagick
-	@touch $(BUILT_DIR)/$@
-
-# --- ldap ADD-ON TARGETS ---
-
-php-apache-%-ldap: php-apache-%
-	@echo "=== Building ldap Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-ldap \
-		images/add-ldap
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-ldap: php-fpm-%
-	@echo "=== Building ldap Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-ldap \
-		images/add-ldap
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-ldap: php-cli-%
-	@echo "=== Building ldap Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-ldap \
-		images/add-ldap
-	@touch $(BUILT_DIR)/$@
-
-# --- redis ADD-ON TARGETS ---
-
-php-apache-%-redis: php-apache-%
-	@echo "=== Building redis Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-redis \
-		images/add-redis
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-redis: php-fpm-%
-	@echo "=== Building redis Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-redis \
-		images/add-redis
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-redis: php-cli-%
-	@echo "=== Building redis Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-redis \
-		images/add-redis
-	@touch $(BUILT_DIR)/$@
-
-# --- postgresql ADD-ON TARGETS ---
-
-php-apache-%-pgsql: php-apache-% images/add-pgsql/Dockerfile
-	@echo "=== Building postgresql Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-pgsql \
-		images/add-pgsql
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-pgsql: php-fpm-% images/add-pgsql/Dockerfile
-	@echo "=== Building postgresql Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-pgsql \
-		images/add-pgsql
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-pgsql: php-cli-% images/add-pgsql/Dockerfile
-	@echo "=== Building postgresql Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-pgsql \
-		images/add-pgsql
-	@touch $(BUILT_DIR)/$@
-
-
-# --- memcached ADD-ON TARGETS ---
-
-php-apache-%-memcached: php-apache-% images/add-memcached/Dockerfile
-	@echo "=== Building memcached Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-memcached \
-		images/add-memcached
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-memcached: php-fpm-% images/add-memcached/Dockerfile
-	@echo "=== Building memcached Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-memcached \
-		images/add-memcached
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-memcached: php-cli-% images/add-memcached/Dockerfile
-	@echo "=== Building memcached Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-memcached \
-		images/add-memcached
-	@touch $(BUILT_DIR)/$@
-
-
-# --- soap ADD-ON TARGETS ---
-
-php-apache-%-soap: php-apache-% images/add-soap/Dockerfile
-	@echo "=== Building soap Add-on for php-apache:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-apache:$* \
-		-t php-apache:$*-soap \
-		images/add-soap
-	@touch $(BUILT_DIR)/$@
-
-php-fpm-%-soap: php-fpm-% images/add-soap/Dockerfile
-	@echo "=== Building soap Add-on for php-fpm:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-fpm:$* \
-		-t php-fpm:$*-soap \
-		images/add-soap
-	@touch $(BUILT_DIR)/$@
-
-php-cli-%-soap: php-cli-% images/add-soap/Dockerfile
-	@echo "=== Building soap Add-on for php-cli:$* ==="
-	docker build \
-		--build-arg BASE_IMAGE=php-cli:$* \
-		-t php-cli:$*-soap \
-		images/add-soap
-	@touch $(BUILT_DIR)/$@
-
 ### not adding Oracle because I can't test it without an Oracle license:
 # # --- ORACLE FILE DEPENDENCIES ---
 # ORACLE_BASIC_ZIP := downloads/instantclient-basic-linux.x64-19.24.0.0.0dbru.zip
@@ -548,6 +334,15 @@ php-cli-%-soap: php-cli-% images/add-soap/Dockerfile
 # # --- oracle ADD-ON TARGETS ---
 # # - uses context trick so ./downloads/ is available
 
+# php-cli-%-oracle: php-cli-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
+# 	@echo "=== Building oracle Add-on for php-cli:$* ==="
+# 	docker build \
+# 		--build-arg BASE_IMAGE=php-cli:$* \
+# 		-t php-cli:$*-oracle \
+# 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
+# 		./
+# 	@touch $(BUILT_DIR)/$@
+
 # php-apache-%-oracle: php-apache-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
 # 	@echo "=== Building oracle Add-on for php-apache:$* ==="
 # 	docker build \
@@ -562,15 +357,6 @@ php-cli-%-soap: php-cli-% images/add-soap/Dockerfile
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-fpm:$* \
 # 		-t php-fpm:$*-oracle \
-# 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
-# 		./
-# 	@touch $(BUILT_DIR)/$@
-
-# php-cli-%-oracle: php-cli-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
-# 	@echo "=== Building oracle Add-on for php-cli:$* ==="
-# 	docker build \
-# 		--build-arg BASE_IMAGE=php-cli:$* \
-# 		-t php-cli:$*-oracle \
 # 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
