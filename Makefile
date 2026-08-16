@@ -456,6 +456,31 @@ test-php-fpm-%: $(BUILT_DIR)/php-fpm-%
 	fi
 	@echo "  ✓ php-fpm:$* FPM/FastCGI valid & reported PHP $*"
 
+# ==============================================================================
+# Add-on Test Suite
+# ==============================================================================
+
+# Function to convert target name (php-cli-8.2-redis) to Docker image tag (php-cli:8.2-redis)
+target_to_image = $(patsubst php-cli-%,php-cli:%,$(patsubst php-fpm-%,php-fpm:%,$(patsubst php-apache-%,php-apache:%,$(1))))
+# # Function to convert image tags (php-cli:8.2-redis) to target names (php-cli-8.2-redis)
+# image_to_target = $(subst :,-,$(1))
+
+# Test targets covering 2-segment, 3-segment, single, and a 3-layer stacked add-on
+TEST_ADDON_TARGETS := \
+    php-cli-8.2-redis \
+    php-fpm-7.4-memcached \
+    php-apache-5.6.40-soap \
+    php-apache-8.2-redis-pgsql-soap
+
+# Dynamically derive image names for test-addon.sh
+TEST_ADDON_IMAGES := $(call target_to_image,$(TEST_ADDON_TARGETS))
+
+.PHONY: test-addons
+test-addons: $(TEST_ADDON_TARGETS)
+	@echo "==> Verifying extension loading across built add-on images..."
+	@chmod +x stack_test/test-addon.sh
+	@./stack_test/test-addon.sh $(TEST_ADDON_IMAGES)
+
 # --- GENERIC STANDALONE TEST RULE LAST ---
 # Using an explicit static pattern rule prevents it from stealing test-php-* targets:
 $(OTHER_TEST_TARGETS): test-%: $(BUILT_DIR)/%
