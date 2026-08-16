@@ -250,6 +250,22 @@ $(BUILT_DIR)/%: $(IMAGE_DIR)/%/Dockerfile
 .PHONY: php-%
 php-%: $(BUILT_DIR)/php-% ;
 
+# ==============================================================================
+# Colon-to-Hyphen CLI Aliases
+# ==============================================================================
+
+.PHONY: php-cli\:% php-fpm\:% php-apache\:%
+
+# note: `@:` is a shell no-op, satisfying the target without touching the filesystem
+php-cli\:%: php-cli-%
+	@:
+
+php-fpm\:%: php-fpm-%
+	@:
+
+php-apache\:%: php-apache-%
+	@:
+
 # --- DOWNLOAD & CACHE RULE ---
 
 URL_PRIMARY = https://www.php.net/distributions/
