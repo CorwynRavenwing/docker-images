@@ -273,6 +273,8 @@ ADDON_DIRS := $(wildcard $(IMAGE_DIR)/add-*/Dockerfile)
 ADDONS     := $(patsubst $(IMAGE_DIR)/add-%/Dockerfile,%,$(ADDON_DIRS))
 ADDON_MK   := $(patsubst %,$(MK_DIR)/%.mk,$(ADDONS))
 
+-include $(ADDON_MK)
+
 .PHONY: mk mk_clean
 
 mk: $(ADDON_MK)
