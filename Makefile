@@ -277,9 +277,6 @@ $(DOWNLOADS_DIR)/php-%.tar.bz2:
 	|| curl -fsSL "$(URL_MUSEUM)/$(@F)" -o $@.tmp
 	@mv $@.tmp $@
 
-# --- TSQL ADD-ON TARGETS ---
-# Matches targets like: php-apache-7.4-tsql or php-fpm-8.1-tsql
-
 # ==============================================================================
 # Auto-generated add-on Makefiles
 # ==============================================================================
