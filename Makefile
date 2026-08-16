@@ -264,6 +264,55 @@ $(DOWNLOADS_DIR)/php-%.tar.bz2:
 # --- TSQL ADD-ON TARGETS ---
 # Matches targets like: php-apache-7.4-tsql or php-fpm-8.1-tsql
 
+# ==============================================================================
+# Auto-generated add-on Makefiles
+# ==============================================================================
+
+# 1. Discover all add-on names by scanning images/add-*/Dockerfile
+ADDON_DIRS := $(wildcard $(IMAGE_DIR)/add-*/Dockerfile)
+ADDONS     := $(patsubst $(IMAGE_DIR)/add-%/Dockerfile,%,$(ADDON_DIRS))
+ADDON_MK   := $(patsubst %,$(MK_DIR)/%.mk,$(ADDONS))
+
+.PHONY: mk
+mk: $(ADDON_MK)
+
+# printf turns doubled \\, %%, or $$ into a single \, %, or $
+$(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
+	@echo "Auto-generating Makefile $@:"
+	@printf '# --- %s ADD-ON TARGETS ---\n\n' "$*" > $@.tmp
+
+	@printf 'php-cli-%%-%s: php-cli-%%\n' $* >> $@.tmp
+	@printf '\t@echo "=== Building %s Add-on for php-cli:$$* ==="\n' "$*" >> $@.tmp
+	@printf '\tdocker build \\\n' >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-cli:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t-t php-cli:$$*-$* \\\n' $* >> $@.tmp
+	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
+	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+
+	@printf 'php-apache-%%-%s: php-apache-%%\n' $* >> $@.tmp
+	@printf '\t@echo "=== Building %s Add-on for php-apache:$$* ==="\n' "$*" >> $@.tmp
+	@printf '\tdocker build \\\n' >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-apache:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t-t php-apache:$$*-$* \\\n' $* >> $@.tmp
+	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
+	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+
+	@printf 'php-fpm-%%-%s: php-fpm-%%\n' $* >> $@.tmp
+	@printf '\t@echo "=== Building %s Add-on for php-fpm:$$* ==="\n' "$*" >> $@.tmp
+	@printf '\tdocker build \\\n' >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-fpm:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t-t php-fpm:$$*-$* \\\n' $* >> $@.tmp
+	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
+	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+
+	@mv $@.tmp $@
+
+# ===============================================================
+# NOTE: PRIOR SECTION SHOULD REPLACE ALL OF THE FOLLOWING STANZAS
+# ===============================================================
+
+# --- TSQL ADD-ON TARGETS ---
+
 php-cli-%-tsql: php-cli-%
 	@echo "=== Building TSQL Add-on for php-cli:$* ==="
 	docker build \
