@@ -1,5 +1,10 @@
 built/
 downloads/*
 !downloads/.gitkeep
+
 *.log
+
 .DS_Store
+*.swp
+*.swo
+
