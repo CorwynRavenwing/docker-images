@@ -1,6 +1,7 @@
 built/
 downloads/*
 !downloads/.gitkeep
+mk/
 
 *.log
 
