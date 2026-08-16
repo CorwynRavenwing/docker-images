@@ -392,6 +392,86 @@ php-cli-%-redis: php-cli-%
 		images/add-redis
 	@touch $(BUILT_DIR)/$@
 
+# --- POSTGRESQL ADD-ON TARGETS ---
+
+php-apache-%-pgsql: php-apache-% images/add-pgsql/Dockerfile
+	@echo "=== Building PostgreSQL Add-on for php-apache:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-apache:$* \
+		-t php-apache:$*-pgsql \
+		images/add-pgsql
+	@touch $(BUILT_DIR)/$@
+
+php-fpm-%-pgsql: php-fpm-% images/add-pgsql/Dockerfile
+	@echo "=== Building PostgreSQL Add-on for php-fpm:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-fpm:$* \
+		-t php-fpm:$*-pgsql \
+		images/add-pgsql
+	@touch $(BUILT_DIR)/$@
+
+php-cli-%-pgsql: php-cli-% images/add-pgsql/Dockerfile
+	@echo "=== Building PostgreSQL Add-on for php-cli:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-cli:$* \
+		-t php-cli:$*-pgsql \
+		images/add-pgsql
+	@touch $(BUILT_DIR)/$@
+
+
+# --- MEMCACHED ADD-ON TARGETS ---
+
+php-apache-%-memcached: php-apache-% images/add-memcached/Dockerfile
+	@echo "=== Building Memcached Add-on for php-apache:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-apache:$* \
+		-t php-apache:$*-memcached \
+		images/add-memcached
+	@touch $(BUILT_DIR)/$@
+
+php-fpm-%-memcached: php-fpm-% images/add-memcached/Dockerfile
+	@echo "=== Building Memcached Add-on for php-fpm:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-fpm:$* \
+		-t php-fpm:$*-memcached \
+		images/add-memcached
+	@touch $(BUILT_DIR)/$@
+
+php-cli-%-memcached: php-cli-% images/add-memcached/Dockerfile
+	@echo "=== Building Memcached Add-on for php-cli:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-cli:$* \
+		-t php-cli:$*-memcached \
+		images/add-memcached
+	@touch $(BUILT_DIR)/$@
+
+
+# --- SOAP ADD-ON TARGETS ---
+
+php-apache-%-soap: php-apache-% images/add-soap/Dockerfile
+	@echo "=== Building SOAP Add-on for php-apache:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-apache:$* \
+		-t php-apache:$*-soap \
+		images/add-soap
+	@touch $(BUILT_DIR)/$@
+
+php-fpm-%-soap: php-fpm-% images/add-soap/Dockerfile
+	@echo "=== Building SOAP Add-on for php-fpm:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-fpm:$* \
+		-t php-fpm:$*-soap \
+		images/add-soap
+	@touch $(BUILT_DIR)/$@
+
+php-cli-%-soap: php-cli-% images/add-soap/Dockerfile
+	@echo "=== Building SOAP Add-on for php-cli:$* ==="
+	docker build \
+		--build-arg BASE_IMAGE=php-cli:$* \
+		-t php-cli:$*-soap \
+		images/add-soap
+	@touch $(BUILT_DIR)/$@
+
 ### not adding Oracle because I can't test it without an Oracle license:
 # # --- ORACLE FILE DEPENDENCIES ---
 # ORACLE_BASIC_ZIP := downloads/instantclient-basic-linux.x64-19.24.0.0.0dbru.zip
