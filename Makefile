@@ -3,9 +3,11 @@
 IMAGE_DIR     := images
 BUILT_DIR     := built
 DOWNLOADS_DIR := downloads
+MK_DIR        := mk
 
+AUTO_MKDIR    := $(IMAGE_DIR) $(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
 # parse-time directory creation
-$(shell mkdir -vp $(IMAGE_DIR) $(BUILT_DIR) $(DOWNLOADS_DIR))
+$(shell mkdir -vp $(AUTO_MKDIR))
 
 # Keep all intermediate files
 .SECONDARY:
