@@ -288,26 +288,26 @@ $(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
 	@printf 'php-cli-%%-%s: php-cli-%%\n' $* >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-cli:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-cli:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-cli:$$* \\\n' >> $@.tmp
 	@printf '\t\t-t php-cli:$$*-$* \\\n' $* >> $@.tmp
 	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
 
 	@printf 'php-apache-%%-%s: php-apache-%%\n' $* >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-apache:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-apache:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-apache:$$* \\\n' >> $@.tmp
 	@printf '\t\t-t php-apache:$$*-$* \\\n' $* >> $@.tmp
 	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
 
 	@printf 'php-fpm-%%-%s: php-fpm-%%\n' $* >> $@.tmp
 	@printf '\t@echo "=== Building %s Add-on for php-fpm:$$* ==="\n' "$*" >> $@.tmp
 	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-fpm:%s \\\n' "$*" >> $@.tmp
+	@printf '\t\t--build-arg BASE_IMAGE=php-fpm:$$* \\\n' >> $@.tmp
 	@printf '\t\t-t php-fpm:$$*-$* \\\n' $* >> $@.tmp
 	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch %s\n\n' "$(BUILT_DIR)/$@" >> $@.tmp
+	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
 
 	@mv $@.tmp $@
 
