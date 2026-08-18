@@ -146,6 +146,9 @@ FPM_TEST_TARGETS      := $(filter test-php-fpm-%, $(PHP_TEST_TARGETS))
 
 all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)
 
+all-check:
+	@echo "make all -> $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)"
+
 # --- CLEAN UNIFIED BASE RULE ---
 # - uses context trick so ./downloads/ is available
 $(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile
