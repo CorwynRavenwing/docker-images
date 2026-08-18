@@ -6,6 +6,9 @@ ARG PHP_VERSION=REQUIRED_BUILD_ARG_MISSING
 # as well as two-part X.Y versions, which always reference the latest available
 FROM php:${PHP_VERSION}-fpm
 
+COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
+RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
+
 # Ensure FPM listens on 0.0.0.0:9000 across all official PHP versions
 # (Official images use zz-docker.conf to set the default listen port)
 RUN if [ -f /usr/local/etc/php-fpm.d/zz-docker.conf ]; then \

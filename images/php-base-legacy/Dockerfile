@@ -3,12 +3,8 @@
 FROM debian:jessie-slim
 
 # 1. Point archived Debian Jessie repos to archive.debian.org
-RUN echo "deb http://archive.debian.org/debian/ jessie main" \
-    > /etc/apt/sources.list \
- && echo "deb http://archive.debian.org/debian-security/ jessie/updates main" \
-    >> /etc/apt/sources.list \
- && echo 'Acquire::Check-Valid-Until "false";' \
-    > /etc/apt/apt.conf.d/99no-check-valid-until
+COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
+RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 
 # 2. Install build tools, Apache server & dev headers, and core libraries
 RUN apt-get update \

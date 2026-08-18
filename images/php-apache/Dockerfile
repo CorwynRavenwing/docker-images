@@ -6,6 +6,9 @@ ARG PHP_VERSION=REQUIRED_BUILD_ARG_MISSING
 # as well as two-part X.Y versions, which always reference the latest available
 FROM php:${PHP_VERSION}-apache
 
+COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
+RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
+
 # Enable standard Apache modules like mod_rewrite
 RUN a2enmod rewrite
 
