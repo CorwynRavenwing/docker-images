@@ -10,8 +10,5 @@ RUN set -e; \
         libmagickwand-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN set -e; \
-    if command -v pecl >/dev/null 2>&1; then \
-        pecl install imagick && docker-php-ext-enable imagick ; \
-    fi
-
+COPY scripts/install-pecl-ext.sh /tmp/install-pecl-ext.sh
+RUN sh /tmp/install-pecl-ext.sh imagick && rm /tmp/install-pecl-ext.sh

@@ -14,4 +14,3 @@ RUN set -e; \
         docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ ; \
         docker-php-ext-install -j$(nproc) ldap ; \
     fi
-
