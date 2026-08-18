@@ -178,7 +178,21 @@ $(LEGACY_APACHE_TARGETS): $(BUILT_DIR)/php-apache-5.%: $(BUILT_DIR)/php-base-leg
 $(LEGACY_FPM_TARGETS): $(BUILT_DIR)/php-fpm-5.%: $(BUILT_DIR)/php-base-legacy-5.%
 
 # --- RE-UNIFIED BUILD RECIPES ---
+# - legacy branch uses context trick so ./downloads/ is available
+# - modern branch uses context trick so ./scripts/ is available
 
+
+# NOTE: possible later refactor:
+# Dynamic prerequisite selection: Reject hyphens, otherwise route to legacy or modern Dockerfile
+# $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$$(if $$(filter $$(LEGACY_PATTERNS),$$*),$(IMAGE_DIR)/php-apache-legacy/Dockerfile,$(IMAGE_DIR)/php-apache/Dockerfile))
+# this would allow it to depend on the correct Dockerfile dynamically
+
+
+.SECONDEXPANSION:
+# SECONDEXPANSION plus FORCE_NONEXISTENT is to forbid this pattern from matching
+# any tails that contain a hyphen (e.g. php-cli-5.0-addonname), which need to match
+# a %-addonname pattern later instead.
+# When this refactor happens, the DEPS_APT dependency need not happen for the Legacy branch
 # ==============================================================================
 # PHP-CLI
 # ==============================================================================
