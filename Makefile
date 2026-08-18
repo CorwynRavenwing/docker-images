@@ -486,7 +486,24 @@ TEST_ADDON_TARGETS := \
     php-cli-8.2-redis \
     php-fpm-7.4-memcached \
     php-apache-5.6.40-soap \
-    php-apache-8.2-redis-pgsql-soap
+    php-apache-8.2-redis-pgsql-soap \
+    \
+    php-cli-8.1-imagick \
+    php-cli-8.1-ldap \
+    php-cli-8.1-tsql \
+    php-cli-8.1-xdebug \
+    \
+    php-cli-5.6-imagick \
+    php-cli-5.6-ldap \
+    php-cli-5.6-tsql \
+    php-cli-5.6-xdebug \
+    \
+    php-cli-5.3-imagick \
+    php-cli-5.3-ldap \
+    php-cli-5.3-tsql \
+    php-cli-5.3-xdebug \
+    \
+    php-cli-5.3.29-soap
 
 # Dynamically derive image names for test-addon.sh
 TEST_ADDON_IMAGES := $(call target_to_image,$(TEST_ADDON_TARGETS))
