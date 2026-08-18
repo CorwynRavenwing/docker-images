@@ -1,5 +1,30 @@
 # docker-images/Makefile
 
+.DEFAULT_GOAL := help
+
+.PHONY: help
+help:
+	@echo "========================================================================"
+	@echo "                     PHP DOCKER STACK BUILD SYSTEM                      "
+	@echo "========================================================================"
+	@echo ""
+	@echo " Usage Syntax:"
+	@echo "   make php-<sapi>:<version>[-addon1-addon2...]"
+	@echo ""
+	@echo " Primary Targets:"
+	@echo "   make all               Build default base images"
+	@echo "   make test-addons       Build and verify add-on extension loading"
+	@echo "   make generate-add-mk   Regenerate mk/*.mk rules from images/add-*"
+	@echo "   make clean             Remove built/ sentinel files"
+	@echo "   make clean-all         Remove built/ sentinels and generated mk/*.mk files"
+	@echo ""
+	@echo " Example Commands:"
+	@echo "   make php-cli:8.2"
+	@echo "   make php-apache:5.6.40-soap"
+	@echo "   make php-fpm:8.1-redis-pgsql-xdebug"
+	@echo ""
+	@echo "========================================================================"
+
 IMAGE_DIR     := images
 BUILT_DIR     := built
 DOWNLOADS_DIR := downloads
