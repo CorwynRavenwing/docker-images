@@ -196,8 +196,7 @@ $(LEGACY_FPM_TARGETS): $(BUILT_DIR)/php-fpm-5.%: $(BUILT_DIR)/php-base-legacy-5.
 # ==============================================================================
 # PHP-CLI
 # ==============================================================================
-# - legacy branch uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-cli-%:
+$(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -216,7 +215,8 @@ $(BUILT_DIR)/php-cli-%:
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-cli:$* \
 			-t php-cli:$(REAL_VER) \
-			$(IMAGE_DIR)/php-cli ; \
+			-f $(IMAGE_DIR)/php-cli/Dockerfile \
+			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-cli-$*
 	@touch $(BUILT_DIR)/php-cli-$(REAL_VER)
@@ -224,8 +224,7 @@ $(BUILT_DIR)/php-cli-%:
 # ==============================================================================
 # PHP-APACHE
 # ==============================================================================
-# - legacy branch uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-apache-%:
+$(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -244,7 +243,8 @@ $(BUILT_DIR)/php-apache-%:
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-apache:$* \
 			-t php-apache:$(REAL_VER) \
-			$(IMAGE_DIR)/php-apache ; \
+			-f $(IMAGE_DIR)/php-apache/Dockerfile \
+			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-apache-$*
 	@touch $(BUILT_DIR)/php-apache-$(REAL_VER)
@@ -252,8 +252,7 @@ $(BUILT_DIR)/php-apache-%:
 # ==============================================================================
 # PHP-FPM
 # ==============================================================================
-# - legacy branch uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-fpm-%:
+$(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -272,7 +271,8 @@ $(BUILT_DIR)/php-fpm-%:
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-fpm:$* \
 			-t php-fpm:$(REAL_VER) \
-			$(IMAGE_DIR)/php-fpm ; \
+			-f $(IMAGE_DIR)/php-fpm/Dockerfile \
+			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-fpm-$*
 	@touch $(BUILT_DIR)/php-fpm-$(REAL_VER)
