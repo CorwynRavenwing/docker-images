@@ -327,11 +327,11 @@ ADDON_MK   := $(patsubst %,$(MK_DIR)/%.mk,$(ADDONS))
 
 -include $(ADDON_MK)
 
-.PHONY: mk mk_clean
+.PHONY: mk clean-mk
 
 mk: $(ADDON_MK)
 
-mk_clean:
+clean-mk:
 	@rm -vr $(MK_DIR)
 
 # printf turns doubled \\, %%, or $$ into a single \, %, or $
