@@ -142,6 +142,10 @@ CLI_TEST_TARGETS      := $(filter test-php-cli-%, $(PHP_TEST_TARGETS))
 APACHE_TEST_TARGETS   := $(filter test-php-apache-%, $(PHP_TEST_TARGETS))
 FPM_TEST_TARGETS      := $(filter test-php-fpm-%, $(PHP_TEST_TARGETS))
 
+# Shared script dependencies
+DEPS_APT  = scripts/fix-debian-apt.sh
+DEPS_PECL = scripts/install-pecl-ext.sh
+
 .PHONY: all clean list list-tests test test-cli test-apache test-fpm
 
 all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)
@@ -151,7 +155,7 @@ all-check:
 
 # --- CLEAN UNIFIED BASE RULE ---
 # - uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile
+$(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile $(DEPS_APT)
 	$(eval REAL_VER := $(call realversion,$*))
 	@"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
 	@echo "=== Building LEGACY BASE image: php-base-legacy:$(REAL_VER) ==="
