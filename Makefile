@@ -337,35 +337,9 @@ mk: $(ADDON_MK)
 clean-mk:
 	@rm -vr $(MK_DIR)
 
-# printf turns doubled \\, %%, or $$ into a single \, %, or $
-$(MK_DIR)/%.mk: $(IMAGE_DIR)/add-%/Dockerfile
+$(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
 	@echo "Auto-generating Makefile $@:"
-	@printf '# --- %s ADD-ON TARGETS ---\n\n' "$*" > $@.tmp
-
-	@printf 'php-cli-%%-%s: php-cli-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
-	@printf '\t@echo "=== Building %s Add-on for php-cli:$$* ==="\n' "$*" >> $@.tmp
-	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-cli:$$* \\\n' >> $@.tmp
-	@printf '\t\t-t php-cli:$$*-$* \\\n' $* >> $@.tmp
-	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
-
-	@printf 'php-apache-%%-%s: php-apache-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
-	@printf '\t@echo "=== Building %s Add-on for php-apache:$$* ==="\n' "$*" >> $@.tmp
-	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-apache:$$* \\\n' >> $@.tmp
-	@printf '\t\t-t php-apache:$$*-$* \\\n' $* >> $@.tmp
-	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
-
-	@printf 'php-fpm-%%-%s: php-fpm-%% images/add-%s/Dockerfile\n' "$*" "$*" >> $@.tmp
-	@printf '\t@echo "=== Building %s Add-on for php-fpm:$$* ==="\n' "$*" >> $@.tmp
-	@printf '\tdocker build \\\n' >> $@.tmp
-	@printf '\t\t--build-arg BASE_IMAGE=php-fpm:$$* \\\n' >> $@.tmp
-	@printf '\t\t-t php-fpm:$$*-$* \\\n' $* >> $@.tmp
-	@printf '\t\timages/add-%s\n' "$*" >> $@.tmp
-	@printf '\t@touch $$(BUILT_DIR)/$$@\n\n' >> $@.tmp
-
+	@./scripts/generate-addon-rules.sh $< > $@.tmp
 	@mv $@.tmp $@
 
 ### not adding Oracle because I can't test it without an Oracle license:
