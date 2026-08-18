@@ -584,5 +584,5 @@ clean-images:
 	rm -rf $(BUILT_DIR)
 
 # Complete reset: Cleans state markers, removes images, and purges build cache
-clean-all: clean clean-downloads prune clean-cache clean-images
+clean-all: clean clean-downloads prune clean-cache clean-images clean-mk
 	@echo "Full cleanup finished."
