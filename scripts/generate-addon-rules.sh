@@ -2,7 +2,7 @@
 set -e
 
 # scripts/generate-addon-rules.sh
-# auto-create mk/xyz.mk from input parameter "xyz" (from name images/add-xyz/Dockerfile)
+# auto-create mk/xyz.mk from input parameter "xyz" (from name images/addons/xyz/Dockerfile)
 
 DOCKERFILE="$1"
 if [ -z "$DOCKERFILE" ]; then
@@ -10,11 +10,8 @@ if [ -z "$DOCKERFILE" ]; then
     exit 1
 fi
 
-# Extract extension name (e.g., images/add-soap/Dockerfile -> soap)
-# Works for current paths (images/add-soap/Dockerfile)
-# and future paths (images/add-ons/add-soap/Dockerfile)
-ADDON_DIR=$(basename "$(dirname "$DOCKERFILE")")
-EXT_NAME=$(echo "$ADDON_DIR" | sed 's/^add-//')
+# Extract extension name (e.g., images/addons/soap/Dockerfile -> soap)
+EXT_NAME=$(basename "$(dirname "$DOCKERFILE")")
 
 cat << EOF
 # Auto-generated rules for add-on: ${EXT_NAME}

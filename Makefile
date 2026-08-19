@@ -30,7 +30,15 @@ BUILT_DIR     := built
 DOWNLOADS_DIR := downloads
 MK_DIR        := mk
 
-AUTO_MKDIR    := $(IMAGE_DIR) $(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
+ADDONS_DIR    := $(IMAGE_DIR)/addons
+LEGACY_DIR    := $(IMAGE_DIR)/legacy
+MODERN_DIR    := $(IMAGE_DIR)/modern
+SINGLE_DIR    := $(IMAGE_DIR)/single
+
+AUTO_MKDIR    := \
+	$(ADDONS_DIR) $(LEGACY_DIR) $(MODERN_DIR) $(SINGLE_DIR) \
+	$(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
+
 # parse-time directory creation
 $(shell mkdir -vp $(AUTO_MKDIR))
 
@@ -83,39 +91,30 @@ realversion = $(or $(REAL_VER_$(1)),$(1))
 MAKEFLAGS += --no-print-directory
 
 # 1. Dependency-only rules (no recipes)
-$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-fpm-$(v)%):    $(IMAGE_DIR)/php-fpm-legacy/Dockerfile
-$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-apache-$(v)%): $(IMAGE_DIR)/php-apache-legacy/Dockerfile
-$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-cli-$(v)%):    $(IMAGE_DIR)/php-cli-legacy/Dockerfile
+$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-fpm-$(v)%):    $(LEGACY_DIR)/php-fpm-legacy/Dockerfile
+$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-apache-$(v)%): $(LEGACY_DIR)/php-apache-legacy/Dockerfile
+$(foreach v,$(LEGACY_VERSIONS),$(BUILT_DIR)/php-cli-$(v)%):    $(LEGACY_DIR)/php-cli-legacy/Dockerfile
 
-$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-fpm-$(v)%):    $(IMAGE_DIR)/php-fpm/Dockerfile
-$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-apache-$(v)%): $(IMAGE_DIR)/php-apache/Dockerfile
-$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-cli-$(v)%):    $(IMAGE_DIR)/php-cli/Dockerfile
+$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-fpm-$(v)%):    $(MODERN_DIR)/php-fpm/Dockerfile
+$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-apache-$(v)%): $(MODERN_DIR)/php-apache/Dockerfile
+$(foreach v,$(MODERN_VERSIONS),$(BUILT_DIR)/php-cli-$(v)%):    $(MODERN_DIR)/php-cli/Dockerfile
 
 # --- DOCKERFILE PREREQUISITES (No recipes, just dependency tracking) ---
 # --- legacy versions
-$(addprefix $(BUILT_DIR)/php-fpm-,$(LEGACY_PATTERNS)): $(IMAGE_DIR)/php-fpm-legacy/Dockerfile
-$(addprefix $(BUILT_DIR)/php-cli-,$(LEGACY_PATTERNS)): $(IMAGE_DIR)/php-cli-legacy/Dockerfile
-$(addprefix $(BUILT_DIR)/php-apache-,$(LEGACY_PATTERNS)): $(IMAGE_DIR)/php-apache-legacy/Dockerfile
+$(addprefix $(BUILT_DIR)/php-fpm-,$(LEGACY_PATTERNS)): $(LEGACY_DIR)/php-fpm-legacy/Dockerfile
+$(addprefix $(BUILT_DIR)/php-cli-,$(LEGACY_PATTERNS)): $(LEGACY_DIR)/php-cli-legacy/Dockerfile
+$(addprefix $(BUILT_DIR)/php-apache-,$(LEGACY_PATTERNS)): $(LEGACY_DIR)/php-apache-legacy/Dockerfile
 # --- modern versions
-$(BUILT_DIR)/php-fpm-%:    $(IMAGE_DIR)/php-fpm/Dockerfile
-$(BUILT_DIR)/php-cli-%:    $(IMAGE_DIR)/php-cli/Dockerfile
-$(BUILT_DIR)/php-apache-%: $(IMAGE_DIR)/php-apache/Dockerfile
+$(BUILT_DIR)/php-fpm-%:    $(MODERN_DIR)/php-fpm/Dockerfile
+$(BUILT_DIR)/php-cli-%:    $(MODERN_DIR)/php-cli/Dockerfile
+$(BUILT_DIR)/php-apache-%: $(MODERN_DIR)/php-apache/Dockerfile
 
-# Default fallback for arbitrary unlisted modern patch versions (e.g. 8.1.12)
+SINGLE_DOCKERFILES := $(wildcard $(SINGLE_DIR)/*/Dockerfile)
+SINGLE_IMAGES      := $(patsubst $(SINGLE_DIR)/%/Dockerfile,$(MK_DIR)/%.mk,$(SINGLE_DOCKERFILES))
 
-# 1a. Discover all image folders
-DOCKERFILES := $(wildcard $(IMAGE_DIR)/*/Dockerfile)
-# 1b. Extract ONLY the bare directory names
-# patsubst transforms "image/foo/Dockerfile" directly into "foo"
-ALL_IMAGES  := $(patsubst $(IMAGE_DIR)/%/Dockerfile,%,$(DOCKERFILES))
-
-# 2. Define the three PHP matrix image names
+# Define the three PHP matrix image names
 PHP_IMAGE_TYPES := php-cli php-apache php-fpm
 PHP_BASE_TYPES := php-base-legacy php-cli-legacy php-apache-legacy php-fpm-legacy
-
-KNOWN_TYPES  := $(PHP_IMAGE_TYPES) $(PHP_BASE_TYPES)
-UNKNOWN_TYPES := $(filter-out $(KNOWN_TYPES),$(ALL_IMAGES))
-OTHER_IMAGES := $(filter-out add-%,$(UNKNOWN_TYPES))
 
 # 1. Standard Flag Files (e.g., built/php-cli-8.3)
 PHP_TARGETS           := $(foreach type,$(PHP_IMAGE_TYPES),$(foreach ver,$(MODERN_VERSIONS),$(type)-$(ver)))
@@ -129,13 +128,13 @@ PHP_LEGACY_FLAG_FILES := $(addprefix $(BUILT_DIR)/,$(PHP_LEGACY_TARGETS))
 LEGACY_BASE_FLAGS     := $(addprefix $(BUILT_DIR)/php-base-legacy-,$(LEGACY_VERSIONS))
 
 # 4. Other targets (e.g. built/mysql-6.0)
-OTHER_FLAG_FILES      := $(addprefix $(BUILT_DIR)/,$(OTHER_IMAGES))
+SINGLE_FLAG_FILES     := $(addprefix $(BUILT_DIR)/,$(SINGLE_IMAGES))
 
 ALL_PHP_TARGETS       := $(PHP_TARGETS) $(PHP_LEGACY_TARGETS)
 
 # 3. Test targets
 PHP_TEST_TARGETS      := $(addprefix test-,$(ALL_PHP_TARGETS))
-OTHER_TEST_TARGETS    := $(addprefix test-,$(OTHER_IMAGES))
+SINGLE_TEST_TARGETS   := $(addprefix test-,$(SINGLE_IMAGES))
 
 # Flavor-specific test lists
 CLI_TEST_TARGETS      := $(filter test-php-cli-%, $(PHP_TEST_TARGETS))
@@ -148,14 +147,14 @@ DEPS_PECL = scripts/install-pecl-ext.sh
 
 .PHONY: all clean list list-tests test test-cli test-apache test-fpm
 
-all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)
+all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)
 
 all-check:
-	@echo "make all -> $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(OTHER_FLAG_FILES)"
+	@echo "make all -> $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)"
 
 # --- CLEAN UNIFIED BASE RULE ---
 # - uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile $(DEPS_APT)
+$(BUILT_DIR)/php-base-legacy-%: $(LEGACY_DIR)/php-base-legacy/Dockerfile $(DEPS_APT)
 	$(eval REAL_VER := $(call realversion,$*))
 	@"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
 	@echo "=== Building LEGACY BASE image: php-base-legacy:$(REAL_VER) ==="
@@ -163,7 +162,7 @@ $(BUILT_DIR)/php-base-legacy-%: $(IMAGE_DIR)/php-base-legacy/Dockerfile $(DEPS_A
 		--build-arg PHP_VERSION=$(REAL_VER) \
 		-t php-base-legacy:$* \
 		-t php-base-legacy:$(REAL_VER) \
-		-f $(IMAGE_DIR)/php-base-legacy/Dockerfile \
+		-f $(LEGACY_DIR)/php-base-legacy/Dockerfile \
 		./
 	@touch $(BUILT_DIR)/php-base-legacy-$(REAL_VER)
 	@touch $@
@@ -191,7 +190,7 @@ $(LEGACY_FPM_TARGETS): $(BUILT_DIR)/php-fpm-5.%: $(BUILT_DIR)/php-base-legacy-5.
 
 # NOTE: possible later refactor:
 # Dynamic prerequisite selection: Reject hyphens, otherwise route to legacy or modern Dockerfile
-# $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$$(if $$(filter $$(LEGACY_PATTERNS),$$*),$(IMAGE_DIR)/php-apache-legacy/Dockerfile,$(IMAGE_DIR)/php-apache/Dockerfile))
+# $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$$(if $$(filter $$(LEGACY_PATTERNS),$$*),$(LEGACY_DIR)/php-apache-legacy/Dockerfile,$(MODERN_DIR)/php-apache/Dockerfile))
 # this would allow it to depend on the correct Dockerfile dynamically
 
 
@@ -214,7 +213,7 @@ $(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-cli:$* \
 			-t php-cli:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-cli-legacy/Dockerfile \
+			-f $(LEGACY_DIR)/php-cli-legacy/Dockerfile \
 			./ ; \
 	else \
 		echo "=== Building MODERN CLI image: php-cli:$* ($(REAL_VER)) ===" ; \
@@ -222,7 +221,7 @@ $(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-cli:$* \
 			-t php-cli:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-cli/Dockerfile \
+			-f $(MODERN_DIR)/php-cli/Dockerfile \
 			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-cli-$*
@@ -242,7 +241,7 @@ $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_A
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-apache:$* \
 			-t php-apache:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-apache-legacy/Dockerfile \
+			-f $(LEGACY_DIR)/php-apache-legacy/Dockerfile \
 			./ ; \
 	else \
 		echo "=== Building MODERN APACHE image: php-apache:$* ($(REAL_VER)) ===" ; \
@@ -250,7 +249,7 @@ $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_A
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-apache:$* \
 			-t php-apache:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-apache/Dockerfile \
+			-f $(MODERN_DIR)/php-apache/Dockerfile \
 			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-apache-$*
@@ -270,7 +269,7 @@ $(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-fpm:$* \
 			-t php-fpm:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-fpm-legacy/Dockerfile \
+			-f $(LEGACY_DIR)/php-fpm-legacy/Dockerfile \
 			./ ; \
 	else \
 		echo "=== Building MODERN FPM image: php-fpm:$* ($(REAL_VER)) ===" ; \
@@ -278,18 +277,18 @@ $(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 			--build-arg PHP_VERSION=$(REAL_VER) \
 			-t php-fpm:$* \
 			-t php-fpm:$(REAL_VER) \
-			-f $(IMAGE_DIR)/php-fpm/Dockerfile \
+			-f $(MODERN_DIR)/php-fpm/Dockerfile \
 			./ ; \
 	fi
 	@touch $(BUILT_DIR)/php-fpm-$*
 	@touch $(BUILT_DIR)/php-fpm-$(REAL_VER)
 
 # Rule for single-build / non-matrix standalone images (tagged :latest)
-$(BUILT_DIR)/%: $(IMAGE_DIR)/%/Dockerfile
+$(BUILT_DIR)/%: $(SINGLE_DIR)/%/Dockerfile
 	@echo "=================================================="
 	@echo "Building standalone image: $*:latest"
 	@echo "=================================================="
-	docker build -t $*:latest $(IMAGE_DIR)/$*
+	docker build -t $*:latest $(SINGLE_DIR)/$*
 	@touch $@
 
 # Alias rule: map short targets (e.g. php-fpm-8.1.12) to real marker files (built/php-fpm-8.1.12)
@@ -327,10 +326,9 @@ $(DOWNLOADS_DIR)/php-%.tar.bz2:
 # Auto-generated add-on Makefiles
 # ==============================================================================
 
-# 1. Discover all add-on names by scanning images/add-*/Dockerfile
-ADDON_DIRS := $(wildcard $(IMAGE_DIR)/add-*/Dockerfile)
-ADDONS     := $(patsubst $(IMAGE_DIR)/add-%/Dockerfile,%,$(ADDON_DIRS))
-ADDON_MK   := $(patsubst %,$(MK_DIR)/%.mk,$(ADDONS))
+# 1. Discover all add-on names by scanning images/*/Dockerfile
+ADDON_DOCKERFILES := $(wildcard $(ADDONS_DIR)/*/Dockerfile)
+ADDON_MK          := $(patsubst $(ADDONS_DIR)/%/Dockerfile,$(MK_DIR)/%.mk,$(ADDON_DOCKERFILES))
 
 -include $(ADDON_MK)
 
@@ -338,10 +336,13 @@ ADDON_MK   := $(patsubst %,$(MK_DIR)/%.mk,$(ADDONS))
 
 mk: $(ADDON_MK)
 
+check-mk:
+	@echo "ADDON_MK: $(ADDON_MK)"
+
 clean-mk:
 	@rm -vr $(MK_DIR)
 
-$(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
+$(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
 	@echo "Auto-generating Makefile $@:"
 	@./scripts/generate-addon-rules.sh $< > $@.tmp
 	@mv $@.tmp $@
@@ -374,7 +375,7 @@ $(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-cli:$* \
 # 		-t php-cli:$*-oracle \
-# 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
+# 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
@@ -383,7 +384,7 @@ $(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-apache:$* \
 # 		-t php-apache:$*-oracle \
-# 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
+# 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
@@ -392,7 +393,7 @@ $(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-fpm:$* \
 # 		-t php-fpm:$*-oracle \
-# 		-f $(IMAGE_DIR)/add-oracle/Dockerfile \
+# 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
@@ -401,7 +402,7 @@ $(MK_DIR)/%.mk: images/add-%/Dockerfile scripts/generate-addon-rules.sh
 list:
 	@echo "Standard PHP Versions: $(MODERN_VERSIONS)"
 	@echo "Legacy PHP Versions:   $(LEGACY_VERSIONS)"
-	@echo "Standalone Images:     $(OTHER_IMAGES)"
+	@echo "Standalone Images:     $(SINGLE_IMAGES)"
 
 list-detail:
 	@echo "Generated Targets:"
@@ -410,11 +411,11 @@ list-detail:
 	@for t in $(PHP_TARGETS); do echo "  - $$t"; done
 
 list-tests:
-	@echo "PHP Test Targets:   $(PHP_TEST_TARGETS)"
-	@echo "Other Test Targets: $(OTHER_TEST_TARGETS)"
+	@echo "PHP Test Targets:    $(PHP_TEST_TARGETS)"
+	@echo "Single Test Targets: $(SINGLE_TEST_TARGETS)"
 
 # --- TEST RULES ---
-test: $(OTHER_TEST_TARGETS) $(PHP_TEST_TARGETS)
+test: $(SINGLE_TEST_TARGETS) $(PHP_TEST_TARGETS)
 	@echo "=================================================="
 	@echo "All health checks passed successfully!"
 	@echo "=================================================="
@@ -520,7 +521,7 @@ test-addons: $(TEST_ADDON_TARGETS)
 
 # --- GENERIC STANDALONE TEST RULE LAST ---
 # Using an explicit static pattern rule prevents it from stealing test-php-* targets:
-$(OTHER_TEST_TARGETS): test-%: $(BUILT_DIR)/%
+$(SINGLE_TEST_TARGETS): test-%: $(BUILT_DIR)/%
 	@echo "Testing image: $*:latest..."
 	@docker image inspect $*:latest > /dev/null 2>&1 \
 		|| (echo "ERROR: Image $*:latest not found!"; exit 1)
