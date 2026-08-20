@@ -15,20 +15,8 @@ RUN set -e; \
         freetds-dev \
         tdsodbc \
         freetds-common \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
-# Configure FreeTDS / pdo_dblib extension where applicable
-# (Modern PHP images with docker-php-ext-install)
-RUN if command -v docker-php-ext-install >/dev/null 2>&1; then \
-        docker-php-ext-configure pdo_dblib --with-libdir=lib/x86_64-linux-gnu/ ; \
-        docker-php-ext-install -j$(nproc) pdo_dblib ; \
-    else \
-        PHP_VER=$(php -r 'echo PHP_VERSION;') ; \
-        tar -xjf downloads/php-${PHP_VER}.tar.bz2 -C /tmp/ ; \
-        cd /tmp/php-${PHP_VER}/ext/pdo_dblib ; \
-        phpize ; \
-        ./configure --with-pdo-dblib=/usr --with-libdir=lib/x86_64-linux-gnu/ ; \
-        make -j$(nproc) && make install ; \
-        docker-php-ext-enable pdo_dblib || true ; \
-        rm -rf /tmp/php-${PHP_VER} ; \
-    fi
+RUN docker-php-ext-configure pdo_dblib --with-libdir=lib/x86_64-linux-gnu/ \
+ && docker-php-ext-install -j$(nproc) pdo_dblib
+
