@@ -43,6 +43,7 @@ for IMAGE in "$@"; do
             pgsql)      EXT_PATTERN="pgsql|pdo_pgsql" ;;
             redis)      EXT_PATTERN="redis" ;;
             soap)       EXT_PATTERN="soap" ;;
+            tsql)       EXT_PATTERN="tsql|pdo_dblib" ;;
             xdebug)     EXT_PATTERN="xdebug" ;;
             *)          EXT_PATTERN="$ADDON" ;;
         esac
