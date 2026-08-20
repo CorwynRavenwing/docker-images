@@ -4,7 +4,3 @@ mk/
 !**/.gitkeep
 
 *.log
-
-.DS_Store
-*.swp
-*.swo
