@@ -6,6 +6,9 @@ FROM debian:jessie-slim
 COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
 RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 
+ENV PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d
+RUN mkdir -p /usr/local/etc/php/conf.d
+
 # 2. Install build tools, Apache server & dev headers, and core libraries
 RUN apt-get update \
  && apt-get install \
