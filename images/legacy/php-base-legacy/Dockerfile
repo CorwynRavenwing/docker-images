@@ -45,10 +45,11 @@ RUN chmod +x /usr/local/bin/docker-php-ext-*
 
 ARG PHP_VERSION=REQUIRED_BUILD_ARG_MISSING
 
-# 4. grab cached version of php source tarball
-COPY ./downloads/php-${PHP_VERSION}.tar.bz2 /tmp/php.tar.bz2
+# A. grab cached version of php source tarball
+COPY ./downloads/php-${PHP_VERSION}.tar.bz2 /usr/src/php.tar.bz2
+# ... and we now keep this file when we're done
 
-# 5. Configure, Compile, and Install all SAPIs (CLI, FPM, Apache mod_php)
+# B. Configure, Compile, and Install all SAPIs (CLI, FPM, Apache mod_php)
 # Note: FPM is unconditionally disabled
 # Note: OpenSSL is unconditionally disabled
 # Stub out ext/openssl C files so ./configure completely skips building it
@@ -57,8 +58,7 @@ COPY ./downloads/php-${PHP_VERSION}.tar.bz2 /tmp/php.tar.bz2
 # Explicitly disable DOM extension in configure
 # Explicitly disable SimpleXML extension in configure
 RUN mkdir -p /usr/src/php \
- && tar -xjf /tmp/php.tar.bz2 -C /usr/src/php --strip-components=1 \
- && rm /tmp/php.tar.bz2 \
+ && tar -xjf /usr/src/php.tar.bz2 -C /usr/src/php --strip-components=1 \
  && cd /usr/src/php \
  && find ext/openssl -name "*.c" -exec cp /dev/null {} \; \
  && find ext/dom -name "*.c" -exec cp /dev/null {} \; \
