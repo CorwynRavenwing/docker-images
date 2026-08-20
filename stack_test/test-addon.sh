@@ -39,10 +39,10 @@ for IMAGE in "$@"; do
     for ADDON in "${ADDONS[@]}"; do
         # Map add-on suffix to loaded extension name patterns
         case "$ADDON" in
-            pgsql)      EXT_PATTERN="pgsql|pdo_pgsql" ;;
             memcached)  EXT_PATTERN="memcached" ;;
-            soap)       EXT_PATTERN="soap" ;;
+            pgsql)      EXT_PATTERN="pgsql|pdo_pgsql" ;;
             redis)      EXT_PATTERN="redis" ;;
+            soap)       EXT_PATTERN="soap" ;;
             xdebug)     EXT_PATTERN="xdebug" ;;
             *)          EXT_PATTERN="$ADDON" ;;
         esac
