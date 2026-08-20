@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+EXT_NAME="$1"
+shift
+
+if [ -z "$EXT_NAME" ]; then
+    echo "Usage: docker-php-ext-configure <ext-name> [configure-flags...]" >&2
+    exit 1
+fi
+
+# Save configure flags for docker-php-ext-install to read
+echo "$@" > "/tmp/.php-config-${EXT_NAME}"

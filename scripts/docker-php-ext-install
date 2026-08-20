@@ -1,0 +1,67 @@
+#!/bin/sh
+set -e
+
+# Strip -j flags if present (e.g. -j4, -j$(nproc))
+ARGS=""
+for arg in "$@"; do
+    case "$arg" in
+        -j*) ;;
+        *) ARGS="$ARGS $arg" ;;
+    esac
+done
+
+PHP_VER=$(php -r 'echo PHP_VERSION;' 2>/dev/null)
+TARBALL=""
+for candidate in \
+    "/tmp/php.tar.bz2" \
+    "/usr/src/php.tar.bz2" \
+    "/tmp/php-${PHP_VER}.tar.bz2" \
+    "/usr/src/php-${PHP_VER}.tar.bz2"
+do
+    if [ -f "$candidate" ]; then
+        TARBALL="$candidate"
+        break
+    fi
+done
+
+for EXT in $ARGS; do
+    echo "=== [Legacy Shim] Building core extension: ${EXT} for PHP ${PHP_VER} ==="
+
+    TMP_DIR="/tmp/php-src-${PHP_VER}"
+    mkdir -p "$TMP_DIR"
+
+    if [ -f "$TARBALL" ]; then
+        # Extract only the requested extension directory from the tarball
+        tar -xjf "$TARBALL" -C "$TMP_DIR" --strip-components=1 "php-${PHP_VER}/ext/${EXT}" 2>/dev/null || \
+        tar -xjf "$TARBALL" -C "$TMP_DIR" --strip-components=1
+        EXT_DIR="$TMP_DIR/ext/${EXT}"
+    elif [ -d "/usr/src/php/ext/${EXT}" ]; then
+        EXT_DIR="/usr/src/php/ext/${EXT}"
+    else
+        echo "ERROR: Extension ${EXT} source not found in $TARBALL or /usr/src/php/ext/" >&2
+        exit 1
+    fi
+
+    cd "$EXT_DIR"
+
+    # Check for stored configure flags from docker-php-ext-configure
+    CONF_FLAGS=""
+    if [ -f "/tmp/.php-config-${EXT}" ]; then
+        CONF_FLAGS=$(cat "/tmp/.php-config-${EXT}")
+        rm -f "/tmp/.php-config-${EXT}"
+    fi
+
+    # self-healing install of autoconf (required for phpize)
+    if ! command -v autoconf >/dev/null 2>&1; then
+        echo "=== [Legacy Shim] Installing autoconf and build tools... ==="
+        apt-get update && apt-get install -y --no-install-recommends autoconf build-essential
+    fi
+
+    phpize
+    ./configure $CONF_FLAGS
+    make -j"$(nproc 2>/dev/null || echo 2)"
+    make install
+    docker-php-ext-enable "$EXT" || true
+    cd /
+    [ -d "$TMP_DIR" ] && rm -rf "$TMP_DIR"
+done

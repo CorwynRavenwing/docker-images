@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+CONF_DIR="${PHP_INI_SCAN_DIR:-/usr/local/etc/php/conf.d}"
+mkdir -p "$CONF_DIR"
+
+for ext in "$@"; do
+    # Strip path or .so suffix if present
+    ext_name=$(basename "$ext" .so)
+    ext_name=$(echo "$ext_name" | sed 's/^docker-php-ext-//')
+
+    ini_file="${CONF_DIR}/docker-php-ext-${ext_name}.ini"
+
+    # Avoid duplicate lines
+    if [ ! -f "$ini_file" ]; then
+        echo "extension=${ext_name}.so" > "$ini_file"
+        echo "=== [Legacy Shim] Enabled extension ${ext_name} in ${ini_file} ==="
+    fi
+done

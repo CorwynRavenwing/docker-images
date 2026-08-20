@@ -31,6 +31,12 @@ RUN ARCH=$(dpkg-architecture -qDEB_HOST_MULTIARCH) \
  && ln -s /usr/lib/${ARCH}/libcrypto.so /usr/lib/ 2>/dev/null || true \
  && ln -s /usr/lib/${ARCH}/libxml2.so /usr/lib/ 2>/dev/null || true
 
+# 4. Ensure docker-php-ext-* scripts exist
+COPY scripts/docker-php-ext-configure /usr/local/bin/docker-php-ext-configure
+COPY scripts/docker-php-ext-enable /usr/local/bin/docker-php-ext-enable
+COPY scripts/docker-php-ext-install /usr/local/bin/docker-php-ext-install
+RUN chmod +x /usr/local/bin/docker-php-ext-*
+
 # --- CACHE BOUNDARY ---
 # Everything above this line is 100% identical for all 5.x versions and cached ONCE.
 

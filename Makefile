@@ -152,9 +152,14 @@ all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)
 all-check:
 	@echo "make all -> $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)"
 
+EXT_SHIM_INSTALL := scripts/docker-php-ext-install
+EXT_SHIM_ENABLE  := scripts/docker-php-ext-enable
+EXT_SHIM_CONFIG  := scripts/docker-php-ext-configure
+EXT_SHIMS        := $(EXT_SHIM_INSTALL) $(EXT_SHIM_ENABLE) $(EXT_SHIM_CONFIG)
+
 # --- CLEAN UNIFIED BASE RULE ---
 # - uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-base-legacy-%: $(LEGACY_DIR)/php-base-legacy/Dockerfile $(DEPS_APT)
+$(BUILT_DIR)/php-base-legacy-%: $(LEGACY_DIR)/php-base-legacy/Dockerfile $(DEPS_APT) $(EXT_SHIMS)
 	$(eval REAL_VER := $(call realversion,$*))
 	@"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
 	@echo "=== Building LEGACY BASE image: php-base-legacy:$(REAL_VER) ==="

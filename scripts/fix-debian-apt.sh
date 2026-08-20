@@ -50,17 +50,3 @@ Acquire::AllowInsecureRepositories "true";
 Acquire::AllowDowngradeToInsecureRepositories "true";
 EOF
 fi
-
-# (2) Shim to create docker-php-ext-enable for PHP before version 5.4
-if ! command -v docker-php-ext-enable >/dev/null 2>&1; then
-    cat << 'EOF' > /usr/local/bin/docker-php-ext-enable
-#!/bin/sh
-set -e
-CONF_DIR="$(php -i | grep 'Scan this dir for additional .ini files' | cut -d'=>' -f2 | xargs)"
-[ -z "$CONF_DIR" ] && CONF_DIR="/usr/local/etc/php/conf.d"
-for ext in "$@"; do
-    echo "extension=${ext}.so" > "${CONF_DIR}/docker-php-ext-${ext}.ini"
-done
-EOF
-    chmod +x /usr/local/bin/docker-php-ext-enable
-fi
