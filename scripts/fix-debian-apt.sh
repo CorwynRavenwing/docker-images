@@ -2,7 +2,7 @@
 
 set -e
 
-# (1) Repoint sources.list to Archive and allow unauthenticated repos for EOL releases
+# Repoint sources.list to Archive and allow unauthenticated repos for EOL releases
 if [ -f /etc/os-release ] && grep -qE 'stretch|jessie|wheezy|squeeze' /etc/os-release; then
     # Extract codename from VERSION_CODENAME, or fallback to parsing "8 (jessie)" / "9 (stretch)" from VERSION
     CODENAME=""
