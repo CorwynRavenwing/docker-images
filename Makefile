@@ -13,6 +13,8 @@ help:
 	@echo ""
 	@echo " Primary Targets:"
 	@echo "   make all               Build default base images"
+	@echo "   make single            Build default singleton images (images/single/)"
+	@echo "   make heavy             Build singleton images that use lots of memory (images/heavy)"
 	@echo "   make test-addons       Build and verify add-on extension loading"
 	@echo "   make generate-add-mk   Regenerate mk/*.mk rules from images/add-*"
 	@echo "   make clean             Remove built/ sentinel files"
@@ -34,9 +36,10 @@ ADDONS_DIR    := $(IMAGE_DIR)/addons
 LEGACY_DIR    := $(IMAGE_DIR)/legacy
 MODERN_DIR    := $(IMAGE_DIR)/modern
 SINGLE_DIR    := $(IMAGE_DIR)/single
+HEAVY_DIR     := $(IMAGE_DIR)/heavy
 
 AUTO_MKDIR    := \
-	$(ADDONS_DIR) $(LEGACY_DIR) $(MODERN_DIR) $(SINGLE_DIR) \
+	$(ADDONS_DIR) $(LEGACY_DIR) $(MODERN_DIR) $(SINGLE_DIR) $(HEAVY_DIR) \
 	$(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
 
 # parse-time directory creation
@@ -110,7 +113,10 @@ $(BUILT_DIR)/php-cli-%:    $(MODERN_DIR)/php-cli/Dockerfile
 $(BUILT_DIR)/php-apache-%: $(MODERN_DIR)/php-apache/Dockerfile
 
 SINGLE_DOCKERFILES := $(wildcard $(SINGLE_DIR)/*/Dockerfile)
-SINGLE_IMAGES      := $(patsubst $(SINGLE_DIR)/%/Dockerfile,$(MK_DIR)/%.mk,$(SINGLE_DOCKERFILES))
+SINGLE_IMAGES      := $(patsubst $(SINGLE_DIR)/%/Dockerfile,%,$(SINGLE_DOCKERFILES))
+
+HEAVY_DOCKERFILES := $(wildcard $(HEAVY_DIR)/*/Dockerfile)
+HEAVY_IMAGES      := $(patsubst $(HEAVY_DIR)/%/Dockerfile,%,$(HEAVY_DOCKERFILES))
 
 # Define the three PHP matrix image names
 PHP_IMAGE_TYPES := php-cli php-apache php-fpm
@@ -129,12 +135,14 @@ LEGACY_BASE_FLAGS     := $(addprefix $(BUILT_DIR)/php-base-legacy-,$(LEGACY_VERS
 
 # 4. Other targets (e.g. built/mysql-6.0)
 SINGLE_FLAG_FILES     := $(addprefix $(BUILT_DIR)/,$(SINGLE_IMAGES))
+HEAVY_FLAG_FILES      := $(addprefix $(BUILT_DIR)/,$(HEAVY_IMAGES))
 
 ALL_PHP_TARGETS       := $(PHP_TARGETS) $(PHP_LEGACY_TARGETS)
 
 # 3. Test targets
 PHP_TEST_TARGETS      := $(addprefix test-,$(ALL_PHP_TARGETS))
 SINGLE_TEST_TARGETS   := $(addprefix test-,$(SINGLE_IMAGES))
+HEAVY_TEST_TARGETS    := $(addprefix test-,$(HEAVY_IMAGES))
 
 # Flavor-specific test lists
 CLI_TEST_TARGETS      := $(filter test-php-cli-%, $(PHP_TEST_TARGETS))
@@ -145,12 +153,20 @@ FPM_TEST_TARGETS      := $(filter test-php-fpm-%, $(PHP_TEST_TARGETS))
 DEPS_APT  = scripts/fix-debian-apt.sh
 DEPS_PECL = scripts/install-pecl-ext.sh
 
-.PHONY: all clean list list-tests test test-cli test-apache test-fpm
+.PHONY: all all-check single heavy clean list list-tests test test-cli test-apache test-fpm
 
+# NOTE: $(HEAVY_FLAG_FILES) is *NOT* a prereq of 'all'
 all: $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)
 
 all-check:
-	@echo "make all -> $(PHP_FLAG_FILES) $(PHP_LEGACY_FLAG_FILES) $(SINGLE_FLAG_FILES)"
+	@echo "make all ->"
+	@echo "    php-modern: $(PHP_FLAG_FILES)"
+	@echo "    php-legacy: $(PHP_LEGACY_FLAG_FILES)"
+	@echo "    single:     $(SINGLE_FLAG_FILES)"
+	@echo "make heavy ->   $(HEAVY_FLAG_FILES)"
+
+single: $(SINGLE_FLAG_FILES)
+heavy:  $(HEAVY_FLAG_FILES)
 
 EXT_SHIM_INSTALL := scripts/docker-php-ext-install
 EXT_SHIM_ENABLE  := scripts/docker-php-ext-enable
@@ -294,6 +310,14 @@ $(BUILT_DIR)/%: $(SINGLE_DIR)/%/Dockerfile
 	@echo "Building standalone image: $*:latest"
 	@echo "=================================================="
 	docker build -t $*:latest $(SINGLE_DIR)/$*
+	@touch $@
+
+# Rule for HEAVY single-build / non-matrix standalone images (tagged :latest)
+$(BUILT_DIR)/%: $(HEAVY_DIR)/%/Dockerfile
+	@echo "=================================================="
+	@echo "Building HEAVY standalone image: $*:latest"
+	@echo "=================================================="
+	docker build -t $*:latest $(HEAVY_DIR)/$*
 	@touch $@
 
 # Alias rule: map short targets (e.g. php-fpm-8.1.12) to real marker files (built/php-fpm-8.1.12)
