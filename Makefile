@@ -522,6 +522,7 @@ TEST_ADDON_TARGETS := \
     php-fpm-7.4-memcached \
     php-apache-5.6.40-soap \
     php-apache-8.2-redis-pgsql-soap \
+    php-fpm-8.2-redis-pgsql-soap \
     \
     php-cli-8.1-imagick \
     php-cli-8.1-ldap \
