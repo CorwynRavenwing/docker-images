@@ -552,7 +552,7 @@ test-addons: $(TEST_ADDON_TARGETS)
 
 # --- GENERIC STANDALONE TEST RULE LAST ---
 # Using an explicit static pattern rule prevents it from stealing test-php-* targets:
-$(SINGLE_TEST_TARGETS): test-%: $(BUILT_DIR)/%
+$(SINGLE_TEST_TARGETS) $(HEAVY_TEST_TARGETS): test-%: $(BUILT_DIR)/%
 	@echo "Testing image: $*:latest..."
 	@docker image inspect $*:latest > /dev/null 2>&1 \
 		|| (echo "ERROR: Image $*:latest not found!"; exit 1)
