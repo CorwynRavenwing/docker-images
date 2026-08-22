@@ -113,10 +113,10 @@ $(BUILT_DIR)/php-cli-%:    $(MODERN_DIR)/php-cli/Dockerfile
 $(BUILT_DIR)/php-apache-%: $(MODERN_DIR)/php-apache/Dockerfile
 
 SINGLE_DOCKERFILES := $(wildcard $(SINGLE_DIR)/*/Dockerfile)
-SINGLE_IMAGES      := $(patsubst $(SINGLE_DIR)/%/Dockerfile,%,$(SINGLE_DOCKERFILES))
+SINGLE_IMAGES      := $(patsubst $(SINGLE_DIR)/%/Dockerfile,local-%,$(SINGLE_DOCKERFILES))
 
 HEAVY_DOCKERFILES := $(wildcard $(HEAVY_DIR)/*/Dockerfile)
-HEAVY_IMAGES      := $(patsubst $(HEAVY_DIR)/%/Dockerfile,%,$(HEAVY_DOCKERFILES))
+HEAVY_IMAGES      := $(patsubst $(HEAVY_DIR)/%/Dockerfile,local-%,$(HEAVY_DOCKERFILES))
 
 # Define the three PHP matrix image names
 PHP_IMAGE_TYPES := php-cli php-apache php-fpm
@@ -305,24 +305,25 @@ $(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 	@touch $(BUILT_DIR)/php-fpm-$(REAL_VER)
 
 # Rule for single-build / non-matrix standalone images (tagged :latest)
-$(BUILT_DIR)/%: $(SINGLE_DIR)/%/Dockerfile
+$(BUILT_DIR)/local-%: $(SINGLE_DIR)/%/Dockerfile
 	@echo "=================================================="
-	@echo "Building standalone image: $*:latest"
+	@echo "Building standalone image: local-$*:latest"
 	@echo "=================================================="
-	docker build -t $*:latest $(SINGLE_DIR)/$*
+	docker build -t local-$*:latest $(SINGLE_DIR)/$*
 	@touch $@
 
 # Rule for HEAVY single-build / non-matrix standalone images (tagged :latest)
-$(BUILT_DIR)/%: $(HEAVY_DIR)/%/Dockerfile
+$(BUILT_DIR)/local-%: $(HEAVY_DIR)/%/Dockerfile
 	@echo "=================================================="
-	@echo "Building HEAVY standalone image: $*:latest"
+	@echo "Building HEAVY standalone image: local-$*:latest"
 	@echo "=================================================="
-	docker build -t $*:latest $(HEAVY_DIR)/$*
+	docker build -t local-$*:latest $(HEAVY_DIR)/$*
 	@touch $@
 
 # Alias rule: map short targets (e.g. php-fpm-8.1.12) to real marker files (built/php-fpm-8.1.12)
-.PHONY: php-%
+.PHONY: php-% local-%
 php-%: $(BUILT_DIR)/php-% ;
+local-%: $(BUILT_DIR)/local-% ;
 
 # ==============================================================================
 # Colon-to-Hyphen CLI Aliases
