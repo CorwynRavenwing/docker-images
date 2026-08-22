@@ -296,6 +296,55 @@ Overall Suite   : 36/36 checks passed
           - php
     ```
 
+## Infrastructure & Service Orchestration
+
+This repository provides both the PHP matrix images and a suite of lightweight standalone infrastructure services (`single/`) and heavy database tools (`heavy/`).
+
+1. Image Categories & Tags
+
+| Category | Makefile Group | Tagging Pattern | Examples |
+| PHP Matrix Base | `make base` | `php-base:<version>-<flavor>` | `php-base:8.2-fpm` |
+| PHP with Add-ons | Matrix Target | `php-<flavor>:<version>-<addons>` | `php-fpm:8.2-redis-pgsql-soap` |
+| Lightweight Services | `make single` / `make all` | `local-<service>:latest` | `local-nginx:latest`, `local-redis:latest` |
+| Resource Services | `make heavy` | `local-<service>:latest` | `local-tsql:latest` |
+
+1. Build Tooling
+
+The build system tracks built images using flag files in `built/``.
+
+```bash
+# Build standard PHP matrix and all single/ infrastructure services
+make all
+
+# Build only lightweight services (nginx, mysql, pgsql, redis, memcached, mailpit)
+make single
+
+# Build heavy opt-in services on demand (e.g. MS SQL Server)
+make heavy
+make local-tsql
+
+# Rebuild a single service after updating its Dockerfile
+rm built/local-nginx
+make local-nginx
+```
+
+1. Orchestrating a Local Stack
+
+An example development environment is provided in `example/docker-compose.yml`. It uses native Docker `HEALTHCHECK` definitions and `condition: service_healthy` to ensure database and caching services are ready before starting PHP and Nginx.
+
+To spin up the example environment:
+
+```bash
+cd example
+docker compose up -d --wait
+```
+
+To stop and tear down containers while preserving volume data:
+
+```bash
+docker compose down
+```
+
 # Appendix A: PHP Release History
 
 ## PHP 1 & 2 Series
