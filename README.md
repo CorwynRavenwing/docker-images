@@ -127,16 +127,41 @@ make php-apache-7.4-ldap-redis
 ```text
 .
 ├── Makefile              # Unified build orchestration & pattern recipes
+├── mk/                   # *.mk Makefile include files: auto-created from addons/
 ├── downloads/            # Host-cached archive directory (parsed/created at runtime)
 ├── built/                # Build sentinel markers (touch files tracking target completion)
+├── scripts/              # bash scripts used in various Dockerfiles
+├── example/              # a docker-compose.yml file using several of these images
+├── stack-test/           # several scripts used to test images for completeness
+├── shared/default.conf   # default .conf file for FPM.  (Unsure if it is still used) 
 └── images/
-    ├── php-5.6/          # Version-specific base image definitions
-    ├── php-8.1/
-    ├── add-imagick/      # Dockerfile for ImageMagick layer
-    ├── add-ldap/         # Dockerfile for LDAP layer
-    ├── add-redis/        # Dockerfile for Redis layer
-    ├── add-tsql/         # Dockerfile for MS SQL / FreeTDS layer
-    └── add-xdebug/       # Dockerfile for Xdebug layer
+    ├── legacy/           # old-style (pre-5.6) Dockerfiles
+    .   ├── php-base-legacy/    # base for the other php-*-legacy images
+    .   ├── php-apache-legacy/
+    .   ├── php-cli-legacy/
+    .   └── php-fpm-legacy/
+    ├── modern/           # new-style (5.6 and later) Dockerfiles
+    .   ├── php-apache/
+    .   ├── php-cli/      # note: there is no php-base/ upstream of these three
+    .   └── php-fpm/
+    ├── addons/           # Dockerfiles that add a layer to another image
+    .   ├── imagick/      # add ImageMagick layer
+    .   ├── ldap/         # add LDAP layer
+    .   ├── redis/        # add Redis layer
+    .   ├── tsql/         # add MS SQL / FreeTDS layer
+    .   ├── xdebug/       # add Xdebug layer
+    .   └── ...
+    ├── single/           # Dockerfile for standalone images
+    .   ├── mysql/        # produces image 'local-mysql'
+    .   ├── nginx/
+    .   ├── pgsql/
+    .   ├── redis/
+    .   └── ...
+    └── heavy/            # More standalone images that are too large for 'make all'
+        └── tsql/         # image 'local-tsql', a Microsoft SQL server
+
+
+
 ```
 
 ### Verification Quick Reference
