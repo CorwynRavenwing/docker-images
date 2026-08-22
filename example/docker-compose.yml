@@ -1,0 +1,53 @@
+# example/docker-compose.yml
+
+services:
+  # Web Server
+  web:
+    image: local-nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html:ro
+    depends_on:
+      php:
+        condition: service_healthy
+
+  # PHP Application (Using your multi-extension FPM image)
+  php:
+    image: php-fpm:8.2-redis-pgsql-soap
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_NAME: app_db
+      DB_USER: app_user
+      DB_PASSWORD: app_secret
+      REDIS_HOST: cache
+      SMTP_HOST: mail
+      SMTP_PORT: 1025
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      mail:
+        condition: service_healthy
+
+  # Database
+  db:
+    image: local-mysql:latest
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Cache / Session Storage
+  cache:
+    image: local-redis:latest
+
+  # Local Email Testing
+  mail:
+    image: local-mailpit:latest
+    ports:
+      - "8025:8025" # Access web UI at http://localhost:8025
+
+volumes:
+  mysql_data:
