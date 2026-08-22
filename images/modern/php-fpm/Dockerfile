@@ -20,7 +20,7 @@ RUN if [ -f /usr/local/etc/php-fpm.d/zz-docker.conf ]; then \
 
 EXPOSE 9000
 
-HEALTHCHECK --interval=1s --timeout=2s --start-period=1s --retries=3 \
-  CMD nc -z 127.0.0.1 9000 || exit 1
+HEALTHCHECK --interval=15s --timeout=3s --start-period=15s --retries=2 \
+  CMD pidof php-fpm || exit 1
 
 CMD ["php-fpm"]

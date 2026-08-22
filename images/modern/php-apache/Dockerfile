@@ -24,7 +24,7 @@ WORKDIR /var/www/html
 
 EXPOSE 80
 
-HEALTHCHECK --interval=1s --timeout=2s --start-period=1s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=2 \
   CMD curl -f http://localhost/ || exit 1
 
 CMD ["apache2-foreground"]

@@ -79,4 +79,8 @@ RUN mkdir -p /usr/src/php \
  && make install \
  && rm -rf /usr/src/php
 
+# Healthcheck for PHP CLI/FPM processes
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD php -v || exit 1
+
 CMD ["php", "-a"]

@@ -11,4 +11,7 @@ RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 
 WORKDIR /app
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD php -v || exit 1
+
 CMD ["php", "-v"]
