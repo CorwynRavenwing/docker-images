@@ -1,4 +1,4 @@
-# images/add-ldap/Dockerfile
+# images/addons/ldap/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}

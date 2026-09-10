@@ -1,4 +1,4 @@
-# images/add-redis/Dockerfile
+# images/addons/redis/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}

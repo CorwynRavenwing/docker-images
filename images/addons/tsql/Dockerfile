@@ -1,4 +1,4 @@
-# images/add-tsql/Dockerfile
+# images/addons/tsql/Dockerfile
 
 # Declare ARG before FROM so it can be used in the FROM instruction
 # scratch === an invalid default, so the system will fail quickly if used improperly

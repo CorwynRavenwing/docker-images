@@ -1,4 +1,4 @@
-# images/add-soap/Dockerfile
+# images/addons/soap/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}

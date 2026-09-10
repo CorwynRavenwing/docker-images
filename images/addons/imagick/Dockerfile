@@ -1,4 +1,4 @@
-# images/add-imagick/Dockerfile
+# images/addons/imagick/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}

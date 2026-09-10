@@ -1,4 +1,4 @@
-# images/add-memcached/Dockerfile
+# images/addons/memcached/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}

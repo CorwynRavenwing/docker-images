@@ -1,4 +1,4 @@
-# images/add-pgsql/Dockerfile
+# images/addons/pgsql/Dockerfile
 
 ARG BASE_IMAGE=scratch
 FROM ${BASE_IMAGE}
