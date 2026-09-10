@@ -8,4 +8,3 @@ RUN set -e; \
  && apt-get install -y --no-install-recommends libpq-dev \
  && docker-php-ext-install -j$(nproc) pgsql pdo_pgsql \
  && rm -rf /var/lib/apt/lists/*
-

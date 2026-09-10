@@ -9,4 +9,5 @@ RUN set -e; \
  && rm -rf /var/lib/apt/lists/*
 
 COPY scripts/install-pecl-ext.sh /tmp/install-pecl-ext.sh
-RUN sh /tmp/install-pecl-ext.sh memcached && rm /tmp/install-pecl-ext.sh
+RUN sh /tmp/install-pecl-ext.sh memcached \
+ && rm /tmp/install-pecl-ext.sh
