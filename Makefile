@@ -523,6 +523,7 @@ TEST_ADDON_TARGETS := \
     php-apache-5.6.40-soap \
     php-apache-8.2-redis-pgsql-soap \
     php-fpm-8.2-redis-pgsql-soap \
+    php-apache-7.2-tsql \
     \
     php-cli-8.1-imagick \
     php-cli-8.1-ldap \
