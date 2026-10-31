@@ -9,6 +9,18 @@ RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 ENV PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d
 RUN mkdir -p /usr/local/etc/php/conf.d
 
+# conditionally install extremely-legacy mysql client
+RUN set -e \
+    && PHP_MINOR=$(echo "$PHP_VERSION" | cut -d. -f1,2) \
+    && if [ "$(printf '%s\n' "5.3" "$PHP_MINOR" | sort -V | head -n1)" != "5.3" ]; then \
+           echo "Installing legacy client libraries for PHP $PHP_VERSION..." \
+           && apt-get update \
+           && apt-get install -y --force-yes libmysqlclient-dev \
+           && rm -rf /var/lib/apt/lists/* ; \
+       else \
+           echo "Skipping libmysqlclient-dev for PHP $PHP_VERSION (using native mysqlnd)."; \
+       fi
+
 # 2. Install build tools, Apache server & dev headers, and core libraries
 RUN apt-get update \
  && apt-get install \
@@ -32,13 +44,18 @@ RUN apt-get update \
 RUN ARCH=$(dpkg-architecture -qDEB_HOST_MULTIARCH) \
  && ln -s /usr/lib/${ARCH}/libssl.so /usr/lib/ 2>/dev/null || true \
  && ln -s /usr/lib/${ARCH}/libcrypto.so /usr/lib/ 2>/dev/null || true \
- && ln -s /usr/lib/${ARCH}/libxml2.so /usr/lib/ 2>/dev/null || true
+ && ln -s /usr/lib/${ARCH}/libxml2.so /usr/lib/ 2>/dev/null || true \
+ && ln -s /usr/lib/${ARCH}/libmysqlclient* /usr/lib/ 2>/dev/null || true \
+ && ln -s /usr/lib/${ARCH}/libz* /usr/lib/ 2>/dev/null || true
 
 # 4. Ensure docker-php-ext-* scripts exist
 COPY scripts/docker-php-ext-configure /usr/local/bin/docker-php-ext-configure
 COPY scripts/docker-php-ext-enable /usr/local/bin/docker-php-ext-enable
 COPY scripts/docker-php-ext-install /usr/local/bin/docker-php-ext-install
 RUN chmod +x /usr/local/bin/docker-php-ext-*
+
+# Copy the 5.0 patch script into the build context
+COPY scripts/patch-legacy-mysqli.sh /usr/local/bin/
 
 # --- CACHE BOUNDARY ---
 # Everything above this line is 100% identical for all 5.x versions and cached ONCE.
@@ -65,10 +82,31 @@ RUN mkdir -p /usr/src/php \
  && find ext/simplexml -name "*.c" -exec cp /dev/null {} \; \
  && export CFLAGS="-O2 -w" \
  && export CPPFLAGS="-Dunixd_config=ap_unixd_config -Dap_get_server_version=ap_get_server_banner" \
+
+ # Extract major.minor version (e.g., "5.0" or "5.3")
+ && PHP_MINOR=$(echo "$PHP_VERSION" | cut -d. -f1,2) \
+ # Determine MySQL flags based on version
+ && if [ "$PHP_MINOR" = "5.0" ]; then \
+        echo "Configuring MySQL for PHP 5.0..." \
+        && MYSQL_FLAGS="--with-mysql=/usr --with-mysqli=/usr/bin/mysql_config"; \
+        patch-legacy-mysqli.sh; \
+    elif [ "$PHP_MINOR" = "5.1" ] || [ "$PHP_MINOR" = "5.2" ]; then \
+        echo "Configuring MySQL for PHP 5.1/5.2..." \
+        && MYSQL_FLAGS="--with-mysql=/usr --with-mysqli=/usr/bin/mysql_config --with-pdo-mysql=/usr"; \
+        patch-legacy-mysqli.sh; \
+    else \
+        echo "Using native mysqlnd for PHP $PHP_VERSION" \
+        && MYSQL_FLAGS="--enable-mysqlnd --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd"; \
+    fi \
+ && echo "DEBUG PHP_VERSION: $PHP_VERSION" \
+ && echo "DEBUG PHP_MINOR  : $PHP_MINOR" \
+ && echo "DEBUG MYSQL_FLAGS: $MYSQL_FLAGS" \
  && ./configure \
         --prefix=/usr/local \
-        --with-config-file-path=/usr/local/etc \
         --with-apxs2=/usr/bin/apxs \
+#        --with-apxs2=/usr/bin/apxs2 \
+        $MYSQL_FLAGS \
+        --with-config-file-path=/usr/local/etc \
         --without-openssl \
         --disable-dom \
         --disable-simplexml \
@@ -77,7 +115,8 @@ RUN mkdir -p /usr/src/php \
         --without-pear \
  && make -j"$(nproc)" \
  && make install \
- && rm -rf /usr/src/php
+ && rm -rf /usr/src/php \
+ && echo "Build complete."
 
 # Healthcheck for PHP CLI/FPM processes
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
