@@ -43,8 +43,15 @@ AUTO_MKDIR    := \
 	$(ADDONS_DIR) $(LEGACY_DIR) $(MODERN_DIR) $(SINGLE_DIR) $(HEAVY_DIR) \
 	$(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
 
-# parse-time directory creation
-$(shell mkdir -vp $(AUTO_MKDIR))
+# 1. Standard recipe to build the directories themselves when missing
+$(AUTO_MKDIR):
+	mkdir -p $@
+
+# 2. Empty-recipe pattern rules that automatically inject order-only prerequisites
+#    into every matching target without touching their individual recipes.
+$(BUILT_DIR)/%:     | $(BUILT_DIR)
+$(DOWNLOADS_DIR)/%: | $(DOWNLOADS_DIR)
+# $(MK_DIR)/%:        | $(MK_DIR)
 
 # Keep all intermediate files
 .SECONDARY:
@@ -358,6 +365,7 @@ clean-mk:
 	@rm -vr $(MK_DIR)
 
 $(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
+	@mkdir -vp $(MK_DIR)
 	@echo "Auto-generating Makefile $@:"
 	@./scripts/generate-addon-rules.sh $< > $@.tmp
 	@mv $@.tmp $@
