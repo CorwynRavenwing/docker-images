@@ -9,6 +9,9 @@ FROM php:${PHP_VERSION}-apache
 COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
 RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 
+# install modules mysqli and PDO
+RUN docker-php-ext-install mysqli pdo_mysql
+
 # Enable standard Apache modules like mod_rewrite
 RUN a2enmod rewrite
 

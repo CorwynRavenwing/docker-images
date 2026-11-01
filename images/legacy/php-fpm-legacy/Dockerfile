@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     spawn-fcgi \
  && rm -rf /var/lib/apt/lists/*
 
+# Copy the 5.0 patch script into the build context
+COPY scripts/patch-legacy-mysqli.sh /usr/local/bin/
+
 # 2. grab cached version of php source tarball
 COPY ./downloads/php-${PHP_VERSION}.tar.bz2 /tmp/php.tar.bz2
 
@@ -23,6 +26,12 @@ RUN mkdir -p /usr/src/php \
  && find ext/openssl -name "*.c" -exec cp /dev/null {} \; \
  && find ext/dom -name "*.c" -exec cp /dev/null {} \; \
  && find ext/simplexml -name "*.c" -exec cp /dev/null {} \; \
+ \
+ # Run the legacy mysqli patch script for versions 5.0-5.2 \
+ && case "${PHP_VERSION}" in \
+        5.0*|5.1*|5.2*) patch-legacy-mysqli.sh ;; \
+    esac \
+ \
  && export CFLAGS="-O2 -w" \
  && CONFIGURE_SAPI=$(case "${PHP_VERSION}" in \
         "5.0"|"5.1"|"5.2") echo "--enable-fastcgi" ;; \
@@ -38,6 +47,8 @@ RUN mkdir -p /usr/src/php \
         --enable-mbstring \
         --with-libxml-dir=/usr \
         --without-pear \
+        --with-mysqli=/usr/bin/mysql_config \
+        --with-mysql=/usr \
  && make -j"$(nproc)" \
  && make install \
  && if [ ! -f /usr/local/bin/php-cgi ] && [ -f /usr/local/bin/php ]; then \

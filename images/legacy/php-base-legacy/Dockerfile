@@ -82,7 +82,6 @@ RUN mkdir -p /usr/src/php \
  && find ext/simplexml -name "*.c" -exec cp /dev/null {} \; \
  && export CFLAGS="-O2 -w" \
  && export CPPFLAGS="-Dunixd_config=ap_unixd_config -Dap_get_server_version=ap_get_server_banner" \
-
  # Extract major.minor version (e.g., "5.0" or "5.3")
  && PHP_MINOR=$(echo "$PHP_VERSION" | cut -d. -f1,2) \
  # Determine MySQL flags based on version

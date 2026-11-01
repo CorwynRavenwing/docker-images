@@ -9,6 +9,9 @@ FROM php:${PHP_VERSION}-fpm
 COPY scripts/fix-debian-apt.sh /tmp/fix-debian-apt.sh
 RUN sh /tmp/fix-debian-apt.sh && rm /tmp/fix-debian-apt.sh
 
+# install modules mysqli and PDO
+RUN docker-php-ext-install mysqli pdo_mysql
+
 # Ensure FPM listens on 0.0.0.0:9000 across all official PHP versions
 # (Official images use zz-docker.conf to set the default listen port)
 RUN if [ -f /usr/local/etc/php-fpm.d/zz-docker.conf ]; then \
