@@ -15,6 +15,7 @@ help:
 	@echo "   make all               Build default base images"
 	@echo "   make single            Build default singleton images (images/single/)"
 	@echo "   make heavy             Build singleton images that use lots of memory (images/heavy)"
+	@echo "   make test-mysql        Verify mysql / mysqli / PDO modules (as appropriate)"
 	@echo "   make test-addons       Build and verify add-on extension loading"
 	@echo "   make generate-add-mk   Regenerate mk/*.mk rules from images/add-*"
 	@echo "   make clean             Remove built/ sentinel files"
@@ -510,6 +511,91 @@ test-php-fpm-%: $(BUILT_DIR)/php-fpm-%
 # ==============================================================================
 # Add-on Test Suite
 # ==============================================================================
+
+# Define the full PHP matrix from legacy 5.0 up to modern 8.5
+PHP_VERSIONS = $(LEGACY_VERSIONS) $(MODERN_VERSIONS)
+
+.PHONY: test-mysql
+test-mysql:
+	@echo "Starting MySQL/PDO module verification matrix..."
+	@echo all versions: $(PHP_VERSIONS)
+	@echo all types: $(PHP_IMAGE_TYPES)
+	@ERROR_COUNT=0; \
+	for v in $(PHP_VERSIONS); do \
+		for IMAGE_PREFIX in $(PHP_IMAGE_TYPES); do \
+			IMAGE="$$IMAGE_PREFIX:$$v"; \
+			echo "----------------------------------------"; \
+			echo "Testing version PHP $$v ($$IMAGE)..."; \
+			\
+			echo DEBUG: docker image inspect "$$IMAGE"; \
+			if ! docker image inspect "$$IMAGE" >/dev/null 2>&1; then \
+				echo "  [SKIP] Image not found, skipping."; \
+				continue; \
+			fi; \
+			\
+			# Run container in background, extract logs cleanly, and force-reap \
+			CID=$$(docker run -d -i "$$IMAGE" php -m </dev/null 2>/dev/null); \
+			sleep 1; \
+			MODS=$$(docker logs "$$CID" 2>/dev/null || true); \
+			docker rm -f "$$CID" >/dev/null 2>&1 || true; \
+			if [ -z "$$MODS" ]; then \
+				echo "  [FAIL] Container produced empty module output for $$IMAGE"; \
+				ERROR_COUNT=$$((ERROR_COUNT + 1)); \
+			fi; \
+			echo "  [DEBUG] Successfully retrieved modules for $$IMAGE"; \
+			\
+			if echo "$$MODS" | grep -qi "^mysqli$$"; then \
+				echo "  [OK] mysqli module loaded"; \
+			else \
+				echo "  [FAIL] mysqli module missing!"; \
+				echo "      DEBUG: MODS was '$$MODS'" \
+				ERROR_COUNT=$$((ERROR_COUNT + 1)); \
+			fi; \
+			\
+			MAJOR=$$(echo "$$v" | cut -d'.' -f1); \
+			MINOR=$$(echo "$$v" | cut -d'.' -f2); \
+			if [ "$$MAJOR" -ge 6 ] || { [ "$$MAJOR" -eq 5 ] && [ "$$MINOR" -ge 1 ]; }; then \
+				if echo "$$MODS" | grep -qi "pdo"; then \
+					echo "  [OK] PDO subsystem present"; \
+				else \
+					echo "  [FAIL] PDO subsystem missing for PHP $$v!"; \
+					ERROR_COUNT=$$((ERROR_COUNT + 1)); \
+				fi; \
+			else \
+				echo "  [OK] PDO correctly absent (pre-5.1)"; \
+			fi; \
+			\
+			# Check presence once \
+			if echo "$$MODS" | grep -qi "^mysql$$"; then \
+				HAS_MYSQL=1; \
+			else \
+				HAS_MYSQL=0; \
+			fi; \
+			\
+			# Evaluate against PHP 5.6 threshold (5.6 and above should not have legacy mysql) \
+			if [ "$$MAJOR" -ge 6 ] || { [ "$$MAJOR" -eq 5 ] && [ "$$MINOR" -ge 6 ]; }; then \
+				if [ "$$HAS_MYSQL" -eq 1 ]; then \
+					echo "  [WARN] legacy mysql module unexpectedly present in PHP 5.6+"; \
+				else \
+					echo "  [OK] legacy mysql correctly absent"; \
+				fi; \
+			else \
+				if [ "$$HAS_MYSQL" -eq 1 ]; then \
+					echo "  [OK] legacy mysql module loaded"; \
+				else \
+					echo "  [FAIL] legacy mysql module missing for PHP $$v!"; \
+					ERROR_COUNT=$$((ERROR_COUNT + 1)); \
+				fi; \
+			fi; \
+		done; \
+	done ; \
+	echo "----------------------------------------"; \
+	if [ "$$ERROR_COUNT" -gt 0 ]; then \
+		echo "FAILURE: $$ERROR_COUNT test(s) failed."; \
+		exit 1; \
+	else \
+		echo "SUCCESS: All available module smoke tests passed successfully!"; \
+	fi
 
 # Function to convert target name (php-cli-8.2-redis) to Docker image tag (php-cli:8.2-redis)
 target_to_image = $(patsubst php-cli-%,php-cli:%,$(patsubst php-fpm-%,php-fpm:%,$(patsubst php-apache-%,php-apache:%,$(1))))
