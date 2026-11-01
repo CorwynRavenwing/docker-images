@@ -22,9 +22,9 @@ help:
 	@echo "   make clean-all         Remove built/ sentinels and generated mk/*.mk files"
 	@echo ""
 	@echo " Example Commands:"
-	@echo "   make php-cli:8.2"
-	@echo "   make php-apache:5.6.40-soap"
-	@echo "   make php-fpm:8.1-redis-pgsql-xdebug"
+	@echo "   make php-cli-8.2"
+	@echo "   make php-apache-5.6.40-soap"
+	@echo "   make php-fpm-8.1-redis-pgsql-xdebug"
 	@echo ""
 	@echo "========================================================================"
 
@@ -228,21 +228,21 @@ $(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
-		echo "=== Building LEGACY CLI image: php-cli:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building LEGACY CLI image: php-cli-$* ($(REAL_VER)) ===" ; \
 		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
 		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-cli:$* \
-			-t php-cli:$(REAL_VER) \
+			-t php-cli-$* \
+			-t php-cli-$(REAL_VER) \
 			-f $(LEGACY_DIR)/php-cli-legacy/Dockerfile \
 			./ ; \
 	else \
-		echo "=== Building MODERN CLI image: php-cli:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building MODERN CLI image: php-cli-$* ($(REAL_VER)) ===" ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-cli:$* \
-			-t php-cli:$(REAL_VER) \
+			-t php-cli-$* \
+			-t php-cli-$(REAL_VER) \
 			-f $(MODERN_DIR)/php-cli/Dockerfile \
 			./ ; \
 	fi
@@ -256,21 +256,21 @@ $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_A
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
-		echo "=== Building LEGACY APACHE image: php-apache:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building LEGACY APACHE image: php-apache-$* ($(REAL_VER)) ===" ; \
 		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
 		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-apache:$* \
-			-t php-apache:$(REAL_VER) \
+			-t php-apache-$* \
+			-t php-apache-$(REAL_VER) \
 			-f $(LEGACY_DIR)/php-apache-legacy/Dockerfile \
 			./ ; \
 	else \
-		echo "=== Building MODERN APACHE image: php-apache:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building MODERN APACHE image: php-apache-$* ($(REAL_VER)) ===" ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-apache:$* \
-			-t php-apache:$(REAL_VER) \
+			-t php-apache-$* \
+			-t php-apache-$(REAL_VER) \
 			-f $(MODERN_DIR)/php-apache/Dockerfile \
 			./ ; \
 	fi
@@ -284,21 +284,21 @@ $(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
-		echo "=== Building LEGACY FPM image: php-fpm:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building LEGACY FPM image: php-fpm-$* ($(REAL_VER)) ===" ; \
 		"$(MAKE)" $(BUILT_DIR)/php-base-legacy-$* ; \
 		"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2 ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-fpm:$* \
-			-t php-fpm:$(REAL_VER) \
+			-t php-fpm-$* \
+			-t php-fpm-$(REAL_VER) \
 			-f $(LEGACY_DIR)/php-fpm-legacy/Dockerfile \
 			./ ; \
 	else \
-		echo "=== Building MODERN FPM image: php-fpm:$* ($(REAL_VER)) ===" ; \
+		echo "=== Building MODERN FPM image: php-fpm-$* ($(REAL_VER)) ===" ; \
 		docker build \
 			--build-arg PHP_VERSION=$(REAL_VER) \
-			-t php-fpm:$* \
-			-t php-fpm:$(REAL_VER) \
+			-t php-fpm-$* \
+			-t php-fpm-$(REAL_VER) \
 			-f $(MODERN_DIR)/php-fpm/Dockerfile \
 			./ ; \
 	fi
@@ -325,22 +325,6 @@ $(BUILT_DIR)/local-%: $(HEAVY_DIR)/%/Dockerfile
 .PHONY: php-% local-%
 php-%: $(BUILT_DIR)/php-% ;
 local-%: $(BUILT_DIR)/local-% ;
-
-# ==============================================================================
-# Colon-to-Hyphen CLI Aliases
-# ==============================================================================
-
-.PHONY: php-cli\:% php-fpm\:% php-apache\:%
-
-# note: `@:` is a shell no-op, satisfying the target without touching the filesystem
-php-cli\:%: php-cli-%
-	@:
-
-php-fpm\:%: php-fpm-%
-	@:
-
-php-apache\:%: php-apache-%
-	@:
 
 # --- DOWNLOAD & CACHE RULE ---
 
@@ -402,28 +386,28 @@ $(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
 # # - uses context trick so ./downloads/ is available
 
 # php-cli-%-oracle: php-cli-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
-# 	@echo "=== Building oracle Add-on for php-cli:$* ==="
+# 	@echo "=== Building oracle Add-on for php-cli-$* ==="
 # 	docker build \
-# 		--build-arg BASE_IMAGE=php-cli:$* \
-# 		-t php-cli:$*-oracle \
+# 		--build-arg BASE_IMAGE=php-cli-$* \
+# 		-t php-cli-$*-oracle \
 # 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
 # php-apache-%-oracle: php-apache-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
-# 	@echo "=== Building oracle Add-on for php-apache:$* ==="
+# 	@echo "=== Building oracle Add-on for php-apache-$* ==="
 # 	docker build \
-# 		--build-arg BASE_IMAGE=php-apache:$* \
-# 		-t php-apache:$*-oracle \
+# 		--build-arg BASE_IMAGE=php-apache-$* \
+# 		-t php-apache-$*-oracle \
 # 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
 # php-fpm-%-oracle: php-fpm-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
-# 	@echo "=== Building oracle Add-on for php-fpm:$* ==="
+# 	@echo "=== Building oracle Add-on for php-fpm-$* ==="
 # 	docker build \
-# 		--build-arg BASE_IMAGE=php-fpm:$* \
-# 		-t php-fpm:$*-oracle \
+# 		--build-arg BASE_IMAGE=php-fpm-$* \
+# 		-t php-fpm-$*-oracle \
 # 		-f $(ADDONS_DIR)/add-oracle/Dockerfile \
 # 		./
 # 	@touch $(BUILT_DIR)/$@
@@ -468,45 +452,45 @@ test-fpm: $(FPM_TEST_TARGETS)
 
 # --- SPECIFIC PHP TEST RULES FIRST ---
 test-php-cli-%: $(BUILT_DIR)/php-cli-%
-	@echo "Testing php-cli:$*..."
-	@docker run --rm php-cli:$* php -v 2>&1 \
+	@echo "Testing php-cli-$*..."
+	@docker run --rm php-cli-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
-		(echo "  ✗ Test failed for php-cli:$*"; exit 1)
-	@echo "  ✓ php-cli:$* reported correct version ($*)"
+		(echo "  ✗ Test failed for php-cli-$*"; exit 1)
+	@echo "  ✓ php-cli-$* reported correct version ($*)"
 
 test-php-apache-%: $(BUILT_DIR)/php-apache-%
-	@echo "Testing php-apache:$*..."
+	@echo "Testing php-apache-$*..."
 	@# Check PHP CLI version inside Apache container
-	@docker run --rm php-apache:$* php -v 2>&1 \
+	@docker run --rm php-apache-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
-		(echo "  ✗ PHP version test failed for php-apache:$*"; exit 1)
+		(echo "  ✗ PHP version test failed for php-apache-$*"; exit 1)
 	@# Check Apache service
-	@docker run --rm php-apache:$* apache2ctl -v 2>&1 \
+	@docker run --rm php-apache-$* apache2ctl -v 2>&1 \
 		| grep -q "Apache" || \
-		(echo "  ✗ Apache service check failed for php-apache:$*"; exit 1)
-	@echo "  ✓ php-apache:$* Apache functional & reported PHP $*"
+		(echo "  ✗ Apache service check failed for php-apache-$*"; exit 1)
+	@echo "  ✓ php-apache-$* Apache functional & reported PHP $*"
 
 test-php-fpm-%: $(BUILT_DIR)/php-fpm-%
-	@echo "Testing php-fpm:$*..."
+	@echo "Testing php-fpm-$*..."
 	@# 1. PHP Version Sanity Check
 	@# Check PHP version report inside container
-	@docker run --rm php-fpm:$* php -v 2>&1 \
+	@docker run --rm php-fpm-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
-		(echo "  ✗ PHP version test failed for php-fpm:$*"; exit 1)
+		(echo "  ✗ PHP version test failed for php-fpm-$*"; exit 1)
 	@# 2. Check FPM config or FastCGI engine
 	@# Test FPM config (APT versioned vs legacy unversioned) or FastCGI binary (5.0-5.2)
 	@set -e ; \
-	if docker run --rm php-fpm:$* which php-fpm$* >/dev/null 2>&1; then \
-		docker run --rm php-fpm:$* php-fpm$* -t 2>&1 | grep -q "successful" || \
-		(echo "  ✗ FPM config check failed for php-fpm:$*"; exit 1); \
-	elif docker run --rm php-fpm:$* which php-fpm >/dev/null 2>&1; then \
-		docker run --rm php-fpm:$* php-fpm -t 2>&1 | grep -q "successful" || \
-		(echo "  ✗ FPM config check failed for php-fpm:$*"; exit 1); \
+	if docker run --rm php-fpm-$* which php-fpm$* >/dev/null 2>&1; then \
+		docker run --rm php-fpm-$* php-fpm$* -t 2>&1 | grep -q "successful" || \
+		(echo "  ✗ FPM config check failed for php-fpm-$*"; exit 1); \
+	elif docker run --rm php-fpm-$* which php-fpm >/dev/null 2>&1; then \
+		docker run --rm php-fpm-$* php-fpm -t 2>&1 | grep -q "successful" || \
+		(echo "  ✗ FPM config check failed for php-fpm-$*"; exit 1); \
 	else \
-		docker run --rm php-fpm:$* php-cgi -v 2>&1 | grep -E -q "cgi-fcgi|PHP $*" || \
-		(echo "  ✗ FastCGI check failed for php-fpm:$*"; exit 1); \
+		docker run --rm php-fpm-$* php-cgi -v 2>&1 | grep -E -q "cgi-fcgi|PHP $*" || \
+		(echo "  ✗ FastCGI check failed for php-fpm-$*"; exit 1); \
 	fi
-	@echo "  ✓ php-fpm:$* FPM/FastCGI valid & reported PHP $*"
+	@echo "  ✓ php-fpm-$* FPM/FastCGI valid & reported PHP $*"
 
 # ==============================================================================
 # Add-on Test Suite
@@ -523,7 +507,7 @@ test-mysql:
 	@ERROR_COUNT=0; \
 	for v in $(PHP_VERSIONS); do \
 		for IMAGE_PREFIX in $(PHP_IMAGE_TYPES); do \
-			IMAGE="$$IMAGE_PREFIX:$$v"; \
+			IMAGE="$$IMAGE_PREFIX-$$v"; \
 			echo "----------------------------------------"; \
 			echo "Testing version PHP $$v ($$IMAGE)..."; \
 			\
@@ -597,11 +581,6 @@ test-mysql:
 		echo "SUCCESS: All available module smoke tests passed successfully!"; \
 	fi
 
-# Function to convert target name (php-cli-8.2-redis) to Docker image tag (php-cli:8.2-redis)
-target_to_image = $(patsubst php-cli-%,php-cli:%,$(patsubst php-fpm-%,php-fpm:%,$(patsubst php-apache-%,php-apache:%,$(1))))
-# # Function to convert image tags (php-cli:8.2-redis) to target names (php-cli-8.2-redis)
-# image_to_target = $(subst :,-,$(1))
-
 # Test targets covering 2-segment, 3-segment, single, and a 3-layer stacked add-on
 TEST_ADDON_TARGETS := \
     php-cli-8.2-redis \
@@ -628,14 +607,11 @@ TEST_ADDON_TARGETS := \
     \
     php-cli-5.3.29-soap
 
-# Dynamically derive image names for test-addon.sh
-TEST_ADDON_IMAGES := $(call target_to_image,$(TEST_ADDON_TARGETS))
-
 .PHONY: test-addons
 test-addons: $(TEST_ADDON_TARGETS)
 	@echo "==> Verifying extension loading across built add-on images..."
 	@chmod +x stack_test/test-addon.sh
-	@./stack_test/test-addon.sh $(TEST_ADDON_IMAGES)
+	@./stack_test/test-addon.sh $(TEST_ADDON_TARGETS)
 
 # --- GENERIC STANDALONE TEST RULE LAST ---
 # Using an explicit static pattern rule prevents it from stealing test-php-* targets:
