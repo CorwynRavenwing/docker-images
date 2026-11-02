@@ -462,7 +462,7 @@ test-fpm: $(FPM_TEST_TARGETS)
 # --- SPECIFIC PHP TEST RULES FIRST ---
 test-php-cli-%: $(BUILT_DIR)/php-cli-%
 	@echo "Testing php-cli-$*..."
-	@docker run --rm php-cli-$* php -v 2>&1 \
+	@./scripts/docker-run.sh php-cli-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
 		(echo "  ✗ Test failed for php-cli-$*"; exit 1)
 	@echo "  ✓ php-cli-$* reported correct version ($*)"
@@ -470,11 +470,11 @@ test-php-cli-%: $(BUILT_DIR)/php-cli-%
 test-php-apache-%: $(BUILT_DIR)/php-apache-%
 	@echo "Testing php-apache-$*..."
 	@# Check PHP CLI version inside Apache container
-	@docker run --rm php-apache-$* php -v 2>&1 \
+	@./scripts/docker-run.sh php-apache-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
 		(echo "  ✗ PHP version test failed for php-apache-$*"; exit 1)
 	@# Check Apache service
-	@docker run --rm php-apache-$* apache2ctl -v 2>&1 \
+	@./scripts/docker-run.sh php-apache-$* apache2ctl -v 2>&1 \
 		| grep -q "Apache" || \
 		(echo "  ✗ Apache service check failed for php-apache-$*"; exit 1)
 	@echo "  ✓ php-apache-$* Apache functional & reported PHP $*"
@@ -483,20 +483,23 @@ test-php-fpm-%: $(BUILT_DIR)/php-fpm-%
 	@echo "Testing php-fpm-$*..."
 	@# 1. PHP Version Sanity Check
 	@# Check PHP version report inside container
-	@docker run --rm php-fpm-$* php -v 2>&1 \
+	@./scripts/docker-run.sh php-fpm-$* php -v 2>&1 \
 		| grep -q "PHP $*" || \
 		(echo "  ✗ PHP version test failed for php-fpm-$*"; exit 1)
 	@# 2. Check FPM config or FastCGI engine
 	@# Test FPM config (APT versioned vs legacy unversioned) or FastCGI binary (5.0-5.2)
 	@set -e ; \
-	if docker run --rm php-fpm-$* which php-fpm$* >/dev/null 2>&1; then \
-		docker run --rm php-fpm-$* php-fpm$* -t 2>&1 | grep -q "successful" || \
+	if ./scripts/docker-run.sh php-fpm-$* which php-fpm$* >/dev/null 2>&1; then \
+		./scripts/docker-run.sh php-fpm-$* php-fpm$* -t 2>&1 \
+		| grep -q "successful" || \
 		(echo "  ✗ FPM config check failed for php-fpm-$*"; exit 1); \
-	elif docker run --rm php-fpm-$* which php-fpm >/dev/null 2>&1; then \
-		docker run --rm php-fpm-$* php-fpm -t 2>&1 | grep -q "successful" || \
+	elif ./scripts/docker-run.sh php-fpm-$* which php-fpm >/dev/null 2>&1; then \
+		./scripts/docker-run.sh php-fpm-$* php-fpm -t 2>&1 \
+		| grep -q "successful" || \
 		(echo "  ✗ FPM config check failed for php-fpm-$*"; exit 1); \
 	else \
-		docker run --rm php-fpm-$* php-cgi -v 2>&1 | grep -E -q "cgi-fcgi|PHP $*" || \
+		./scripts/docker-run.sh php-fpm-$* php-cgi -v 2>&1 \
+		| grep -E -q "cgi-fcgi|PHP $*" || \
 		(echo "  ✗ FastCGI check failed for php-fpm-$*"; exit 1); \
 	fi
 	@echo "  ✓ php-fpm-$* FPM/FastCGI valid & reported PHP $*"

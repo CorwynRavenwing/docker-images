@@ -90,6 +90,8 @@ RUN mkdir -p /usr/src/php \
         && MYSQL_FLAGS="--with-mysql=/usr --with-mysqli=/usr/bin/mysql_config"; \
         patch-legacy-mysqli.sh; \
     elif [ "$PHP_MINOR" = "5.1" ] || [ "$PHP_MINOR" = "5.2" ]; then \
+        # export CFLAGS="-std=gnu89 -fcommon -O2"; \
+        # export CXXFLAGS="-std=gnu++98 -fcommon -O2"; \
         echo "Configuring MySQL for PHP 5.1/5.2..." \
         && MYSQL_FLAGS="--with-mysql=/usr --with-mysqli=/usr/bin/mysql_config --with-pdo-mysql=/usr"; \
         patch-legacy-mysqli.sh; \
