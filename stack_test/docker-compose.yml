@@ -3,7 +3,7 @@
 services:
   # --- 1. Nginx + PHP-FPM Stack ---
   php-fpm:
-    image: php-fpm:${PHP_VERSION:-8.1}
+    image: php-fpm-${PHP_VERSION:-8.1}
     container_name: test-php-fpm
     volumes:
       - ./html:/var/www/html:ro
@@ -21,7 +21,7 @@ services:
 
   # --- 2. Apache + PHP Stack ---
   web-apache:
-    image: php-apache:${PHP_VERSION:-8.1}
+    image: php-apache-${PHP_VERSION:-8.1}
     container_name: test-web-apache
     ports:
       - "8081:80"

@@ -22,10 +22,10 @@ EOF
 for TYPE in cli apache fpm; do
     cat << EOF
 \$(BUILT_DIR)/php-${TYPE}-%-${EXT_NAME}: \$(BUILT_DIR)/php-${TYPE}-% ${DOCKERFILE} \$(DEPS_PECL)
-	@echo "=== Building ${EXT_NAME} Add-on for php-${TYPE}:\$* ==="
+	@echo "=== Building ${EXT_NAME} Add-on for php-${TYPE}-\$* ==="
 	docker build \\
-		--build-arg BASE_IMAGE=php-${TYPE}:\$* \\
-		-t php-${TYPE}:\$*-${EXT_NAME} \\
+		--build-arg BASE_IMAGE=php-${TYPE}-\$* \\
+		-t php-${TYPE}-\$*-${EXT_NAME} \\
 		-f ${DOCKERFILE} \\
 		./
 	@touch \$@

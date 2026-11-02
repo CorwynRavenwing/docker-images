@@ -13,19 +13,18 @@ for IMAGE in "$@"; do
     echo "Testing Image: $IMAGE"
     echo "========================================="
 
-    # Extract tag portion (everything after the colon, e.g., 8.2-redis-pgsql-soap)
-    TAG="${IMAGE##*:}"
+    # Split the entire image name on hyphens
+    IFS='-' read -ra TOKENS <<< "$IMAGE"
 
-    # Split tag tokens on hyphens
-    IFS='-' read -ra TOKENS <<< "$TAG"
+    # TOKENS[0] = "php"
+    # TOKENS[1] = type of build (e.g., cli, fpm, apache)
+    # TOKENS[2] = version (e.g., 8.2, 5.6)
+    # TOKENS[3+] = addons (all remaining elements)
 
     ADDONS=()
-    for TOKEN in "${TOKENS[@]}"; do
-        # Ignore numeric version tokens (e.g. 8.2, 5.6.40)
-        if [[ ! "$TOKEN" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
-            ADDONS+=("$TOKEN")
-        fi
-    done
+    if [ "${#TOKENS[@]}" -gt 3 ]; then
+        ADDONS=("${TOKENS[@]:3}")
+    fi
 
     if [ "${#ADDONS[@]}" -eq 0 ]; then
         echo "  [WARN] No add-on suffixes detected in tag '$TAG'. Skipping."
