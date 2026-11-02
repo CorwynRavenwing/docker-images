@@ -50,15 +50,9 @@ AUTO_MKDIR    := \
 	$(ADDONS_DIR) $(LEGACY_DIR) $(MODERN_DIR) $(SINGLE_DIR) $(HEAVY_DIR) \
 	$(BUILT_DIR) $(DOWNLOADS_DIR) $(MK_DIR)
 
-# 1. Standard recipe to build the directories themselves when missing
+# Standard recipe to build the directories themselves when missing
 $(AUTO_MKDIR):
 	mkdir -p $@
-
-# 2. Empty-recipe pattern rules that automatically inject order-only prerequisites
-#    into every matching target without touching their individual recipes.
-$(BUILT_DIR)/%:     | $(BUILT_DIR)
-$(DOWNLOADS_DIR)/%: | $(DOWNLOADS_DIR)
-# $(MK_DIR)/%:        | $(MK_DIR)
 
 # Keep all intermediate files
 .SECONDARY:
@@ -190,7 +184,7 @@ EXT_SHIMS        := $(EXT_SHIM_INSTALL) $(EXT_SHIM_ENABLE) $(EXT_SHIM_CONFIG)
 
 # --- CLEAN UNIFIED BASE RULE ---
 # - uses context trick so ./downloads/ is available
-$(BUILT_DIR)/php-base-legacy-%: $(LEGACY_DIR)/php-base-legacy/Dockerfile $(DEPS_APT) $(EXT_SHIMS)
+$(BUILT_DIR)/php-base-legacy-%: $(LEGACY_DIR)/php-base-legacy/Dockerfile $(DEPS_APT) $(EXT_SHIMS) | $(BUILT_DIR)
 	$(eval REAL_VER := $(call realversion,$*))
 	@"$(MAKE)" $(DOWNLOADS_DIR)/php-$(REAL_VER).tar.bz2
 	@echo "=== Building LEGACY BASE image: php-base-legacy:$(REAL_VER) ==="
@@ -238,7 +232,7 @@ $(LEGACY_FPM_TARGETS): $(BUILT_DIR)/php-fpm-5.%: $(BUILT_DIR)/php-base-legacy-5.
 # ==============================================================================
 # PHP-CLI
 # ==============================================================================
-$(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
+$(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)) | $(BUILT_DIR)
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -266,7 +260,7 @@ $(BUILT_DIR)/php-cli-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 # ==============================================================================
 # PHP-APACHE
 # ==============================================================================
-$(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
+$(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)) | $(BUILT_DIR)
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -294,7 +288,7 @@ $(BUILT_DIR)/php-apache-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_A
 # ==============================================================================
 # PHP-FPM
 # ==============================================================================
-$(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT))
+$(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)) | $(BUILT_DIR)
 	$(eval REAL_VER := $(call realversion,$*))
 	@set -e ; \
 	if [ -n "$(filter $(LEGACY_PATTERNS),$*)" ]; then \
@@ -320,7 +314,7 @@ $(BUILT_DIR)/php-fpm-%: $$(if $$(findstring -,$$*),FORCE_NONEXISTENT,$(DEPS_APT)
 	@touch $(BUILT_DIR)/php-fpm-$(REAL_VER)
 
 # Rule for single-build / non-matrix standalone images (tagged :latest)
-$(BUILT_DIR)/local-%: $(SINGLE_DIR)/%/Dockerfile
+$(BUILT_DIR)/local-%: $(SINGLE_DIR)/%/Dockerfile | $(BUILT_DIR)
 	@echo "=================================================="
 	@echo "Building standalone image: local-$*:latest"
 	@echo "=================================================="
@@ -328,7 +322,7 @@ $(BUILT_DIR)/local-%: $(SINGLE_DIR)/%/Dockerfile
 	@touch $@
 
 # Rule for HEAVY single-build / non-matrix standalone images (tagged :latest)
-$(BUILT_DIR)/local-%: $(HEAVY_DIR)/%/Dockerfile
+$(BUILT_DIR)/local-%: $(HEAVY_DIR)/%/Dockerfile | $(BUILT_DIR)
 	@echo "=================================================="
 	@echo "Building HEAVY standalone image: local-$*:latest"
 	@echo "=================================================="
@@ -345,7 +339,7 @@ local-%: $(BUILT_DIR)/local-% ;
 URL_PRIMARY = https://www.php.net/distributions/
 URL_MUSEUM = https://museum.php.net/php5/
 
-$(DOWNLOADS_DIR)/php-%.tar.bz2:
+$(DOWNLOADS_DIR)/php-%.tar.bz2: | $(DOWNLOADS_DIR)
 	@echo "=== Downloading PHP $* source tarball ==="
 	@curl -fsSL "$(URL_PRIMARY)/$(@F)" -o $@.tmp \
 	|| curl -fsSL "$(URL_MUSEUM)/$(@F)" -o $@.tmp
@@ -361,9 +355,9 @@ ADDON_MK          := $(patsubst $(ADDONS_DIR)/%/Dockerfile,$(MK_DIR)/%.mk,$(ADDO
 
 -include $(ADDON_MK)
 
-.PHONY: mk clean-mk
+.PHONY: all_mk clean-mk
 
-mk: $(ADDON_MK)
+all_mk: $(ADDON_MK)
 
 check-mk:
 	@echo "ADDON_MK: $(ADDON_MK)"
@@ -371,7 +365,7 @@ check-mk:
 clean-mk:
 	@rm -vr $(MK_DIR)
 
-$(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
+$(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh | $(MK_DIR)
 	@mkdir -vp $(MK_DIR)
 	@echo "Auto-generating Makefile $@:"
 	@./scripts/generate-addon-rules.sh $< > $@.tmp
@@ -400,7 +394,7 @@ $(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
 # # --- oracle ADD-ON TARGETS ---
 # # - uses context trick so ./downloads/ is available
 
-# php-cli-%-oracle: php-cli-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
+# php-cli-%-oracle: php-cli-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP) | $(BUILT_DIR)
 # 	@echo "=== Building oracle Add-on for php-cli-$* ==="
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-cli-$* \
@@ -409,7 +403,7 @@ $(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
-# php-apache-%-oracle: php-apache-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
+# php-apache-%-oracle: php-apache-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP) | $(BUILT_DIR)
 # 	@echo "=== Building oracle Add-on for php-apache-$* ==="
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-apache-$* \
@@ -418,7 +412,7 @@ $(MK_DIR)/%.mk: $(ADDONS_DIR)/%/Dockerfile scripts/generate-addon-rules.sh
 # 		./
 # 	@touch $(BUILT_DIR)/$@
 
-# php-fpm-%-oracle: php-fpm-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP)
+# php-fpm-%-oracle: php-fpm-% $(ORACLE_BASIC_ZIP) $(ORACLE_SDK_ZIP) | $(BUILT_DIR)
 # 	@echo "=== Building oracle Add-on for php-fpm-$* ==="
 # 	docker build \
 # 		--build-arg BASE_IMAGE=php-fpm-$* \
