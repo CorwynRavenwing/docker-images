@@ -76,5 +76,9 @@ EXPOSE 9000
 HEALTHCHECK --interval=1s --timeout=2s --start-period=1s --retries=3 \
   CMD nc -z 127.0.0.1 9000 || exit 1
 
-# 4. Use php-fpm for 5.3-5.5, or spawn-fcgi with php-cgi for 5.0-5.2
-CMD ["sh", "-c", "if [ -f /usr/local/sbin/php-fpm ]; then exec php-fpm -F; else exec spawn-fcgi -n -a 0.0.0.0 -p 9000 -u www-data -g www-data -f /usr/local/bin/php-cgi; fi"]
+# Copy the unified entrypoint script into the container
+COPY scripts/docker-fpm-5-entrypoint.sh /usr/local/bin/docker-fpm-5-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-fpm-5-entrypoint.sh
+
+# Use the script as the container entrypoint/command
+CMD ["docker-fpm-5-entrypoint.sh"]
